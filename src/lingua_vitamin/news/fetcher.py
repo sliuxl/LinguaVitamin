@@ -1,5 +1,6 @@
 """To get news from RSS."""
 
+import logging
 from typing import List, Dict
 
 import feedparser
@@ -30,19 +31,27 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
         raise ValueError(f"No RSS feed configured for language '{lang}'")
 
     feed = feedparser.parse(url)
-    entries = feed.entries[:top_n]
+    entries = feed.entries[: top_n * 2]
 
+    titles = set()
     news_items = []
     for entry in entries:
         title = entry.title if "title" in entry else ""
+
+        if title in titles:
+            logging.warning("Duplicate title: `%s`.", title)
+            continue
+        titles.add(title)
+
         # Use summary/detail if available, fallback to empty string
         content = (
             entry.get("summary")
             or entry.get("description")
-            or entry.get("content")[0].value
-            if entry.get("content")
-            else ""
+            or (entry.get("content")[0].value if entry.get("content") else "")
         )
         news_items.append({KEY_TITLE: title, KEY_CONTENT: content})
+
+        if len(news_items) >= top_n:
+            break
 
     return news_items

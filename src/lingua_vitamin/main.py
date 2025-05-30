@@ -81,6 +81,7 @@ def git_run(*args):
 
 
 def create_branch_and_push(branch_name, file_path, base_branch):
+    """Create branch and push."""
     git_run("checkout", base_branch)
     git_run("pull", "origin", base_branch)
 
@@ -91,6 +92,7 @@ def create_branch_and_push(branch_name, file_path, base_branch):
 
 
 def main():
+    """Main."""
     load_dotenv()
     args = parse_args()
 
@@ -147,6 +149,7 @@ def main():
     logging.info("Daily news written to `%s`.", md_path)
 
     pr_title = f"LinguaVitamin daily news: {date_str}"
+    pr_url = None
     if github_token and args.github_repo:
         try:
             create_branch_and_push(branch_name, md_path, args.base_branch)

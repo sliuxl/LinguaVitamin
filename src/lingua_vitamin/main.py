@@ -159,9 +159,12 @@ def main():
 
         translated_articles.append({"original": article, "translations": translations})
 
-    lines = []
+    lines = [
+        f"# LinguaVitamin Daily News - {date_str}\n\n",
+        "\n\n",
+    ]
+    toc = []
     df = defaultdict(lambda: [])
-    lines.append(f"# LinguaVitamin Daily News - {date_str}\n\n")
     for i, art in enumerate(translated_articles):
         source = args.source_lang
         lines.append(f"## Article {i}\n")
@@ -172,6 +175,15 @@ def main():
         lines.append(f"{content}\n\n")
         df[f"title-{source}"].append(title)
         df[f"content-{source}"].append(content)
+
+        summary = title
+        for target in ("en", "zh"):
+            if target in args.target_langs:
+                temp = art["translations"][target]["title"]
+                summary += f" | {temp}"
+        summary = f"[[{i:02d}] {summary}](#article-{i})"
+        toc.append(summary)
+
         for target, trans in art["translations"].items():
             lines.append(f"### Translation ({target}):\n")
             title, content = trans["title"], trans["content"]
@@ -181,6 +193,7 @@ def main():
             df[f"content-{target}"].append(content)
         lines.append("---\n\n")
 
+    lines = lines[:1] + ["\n".join(f"- {t}" for t in toc)] + lines[1:]
     content = "".join(lines)
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(content)

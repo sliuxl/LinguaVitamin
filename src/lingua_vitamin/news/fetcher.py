@@ -54,4 +54,9 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
         if len(news_items) >= top_n:
             break
 
+    if len(news_items) < top_n:
+        logging.warning(
+            "Insufficient number of news: len = %d < %d.", len(news_items), top_n
+        )
+
     return news_items

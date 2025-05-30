@@ -1,5 +1,6 @@
 """Main."""
 
+from collections import defaultdict
 import logging
 import os
 import sys
@@ -8,6 +9,7 @@ import subprocess
 import argparse
 import datetime
 from dotenv import load_dotenv
+import pandas as pd
 
 from lingua_vitamin.news import fetcher
 from lingua_vitamin.translate.translator import Translator
@@ -92,7 +94,10 @@ def create_branch_and_push(branch_name, file_path, base_branch):
     # git_run("pull", "origin", base_branch)
 
     git_run("checkout", "-b", branch_name)
-    git_run("add", file_path)
+    if isinstance(file_path, str):
+        file_path = [file_path]
+    for file in file_path:
+        git_run("add", file)
     git_run("commit", "-m", f"Add daily news for {branch_name}")
     git_run("push", "-u", "origin", branch_name)
 
@@ -108,13 +113,27 @@ def main():
             "GitHub token not provided via --github_token or GITHUB_TOKEN env"
         )
 
-    os.makedirs(args.output_dir, exist_ok=True)
-    date_str = datetime.date.today().isoformat()
+    # Filenames
+    date = datetime.date.today()
+    date_str = date.isoformat()
+    # news--de--YYYY-MM-DD
     branch_name = f"{os.path.basename(args.output_dir)}--{args.source_lang}--{date_str}"
-    md_filename = f"{branch_name}.md"
+    # markdown/YYYY/MM
+    md_filename = os.path.join(
+        f"markdown/{date.year:04d}/{date.month:02d}", f"{branch_name}"
+    )
+    # AUTO--news--de--YYYY-MM-DD
     branch_name = f"AUTO--{branch_name}"
+    # output/news/markdown/YYYY/MM/news--de--YYYY-MM-DD.md
     md_path = os.path.join(args.output_dir, md_filename)
 
+    csv_path = md_path.replace("/markdown/", "/csv/") + ".csv"
+    md_path += ".md"
+
+    os.makedirs(os.path.dirname(md_path), exist_ok=True)
+    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+
+    # Articles
     articles = fetcher.fetch_top_news_rss(
         lang=args.source_lang, top_n=args.num_articles
     )
@@ -140,18 +159,34 @@ def main():
 
         translated_articles.append({"original": article, "translations": translations})
 
+    lines = []
+    df = defaultdict(lambda: [])
+    lines.append(f"# LinguaVitamin Daily News - {date_str}\n\n")
+    for i, art in enumerate(translated_articles):
+        source = args.source_lang
+        lines.append(f"## Article {i}\n")
+        lines.append(f"### Original ({source}):\n")
+
+        title, content = art["original"]["title"], art["original"]["content"]
+        lines.append(f"**Title:** {title}\n\n")
+        lines.append(f"{content}\n\n")
+        df[f"title-{source}"].append(title)
+        df[f"content-{source}"].append(content)
+        for target, trans in art["translations"].items():
+            lines.append(f"### Translation ({target}):\n")
+            title, content = trans["title"], trans["content"]
+            lines.append(f"**Title:** {title}\n\n")
+            lines.append(f"{content}\n\n")
+            df[f"title-{target}"].append(title)
+            df[f"content-{target}"].append(content)
+        lines.append("---\n\n")
+
+    content = "".join(lines)
     with open(md_path, "w", encoding="utf-8") as f:
-        f.write(f"# LinguaVitamin Daily News - {date_str}\n\n")
-        for i, art in enumerate(translated_articles, 1):
-            f.write(f"## Article {i}\n")
-            f.write(f"### Original ({args.source_lang}):\n")
-            f.write(f"**Title:** {art['original']['title']}\n\n")
-            f.write(f"{art['original']['content']}\n\n")
-            for target, trans in art["translations"].items():
-                f.write(f"### Translation ({target}):\n")
-                f.write(f"**Title:** {trans['title']}\n\n")
-                f.write(f"{trans['content']}\n\n")
-            f.write("---\n\n")
+        f.write(content)
+
+    df = pd.DataFrame.from_dict(data=df)
+    df.to_csv(csv_path)
 
     logging.info("Daily news written to `%s`.", md_path)
 
@@ -159,7 +194,7 @@ def main():
     pr_url = None
     if github_token and args.github_repo:
         try:
-            create_branch_and_push(branch_name, md_path, args.base_branch)
+            create_branch_and_push(branch_name, (md_path, csv_path), args.base_branch)
 
             pr_body = f"Auto-generated daily news translations for {date_str}."
 

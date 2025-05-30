@@ -41,4 +41,4 @@ jobs:
             --num_articles 5 \
             --source_lang de \
             --target_langs en es fr zh \
-            --github_repo liuxl/LinguaVitamin
+            --github_repo sliuxl/LinguaVitamin

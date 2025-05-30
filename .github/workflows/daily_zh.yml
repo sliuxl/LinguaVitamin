@@ -1,8 +1,8 @@
-name: Daily LinguaVitamin News Run
+name: Daily LinguaVitamin News (zh) Run
 
 on:
   schedule:
-    - cron: "30 14 * * *"       # Runs daily at 07:30 PDT
+    - cron: "35 14 * * *"       # Runs daily at 07:35 PDT
   workflow_dispatch:            # Also allows manual triggering
 
 jobs:
@@ -39,6 +39,6 @@ jobs:
             --to_emails         "$TO_EMAILS" \
             \
             --num_articles 5 \
-            --source_lang de \
-            --target_langs en es fr zh \
-            --github_repo liuxl/LinguaVitamin
+            --source_lang zh \
+            --target_langs de en es fr \
+            --github_repo sliuxl/LinguaVitamin

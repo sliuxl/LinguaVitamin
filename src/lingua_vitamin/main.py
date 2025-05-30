@@ -104,8 +104,9 @@ def main():
 
     os.makedirs(args.output_dir, exist_ok=True)
     date_str = datetime.date.today().isoformat()
-    branch_name = f"daily-news-{date_str}"
-    md_filename = f"news_{date_str}.md"
+    branch_name = f"{os.path.basename(args.output_dir)}--{args.source_lang}--{date_str}"
+    md_filename = f"{branch_name}.md"
+    branch_name = f"AUTO--{branch_name}"
     md_path = os.path.join(args.output_dir, md_filename)
 
     articles = fetcher.fetch_top_news_rss(
@@ -148,7 +149,7 @@ def main():
 
     logging.info("Daily news written to `%s`.", md_path)
 
-    pr_title = f"LinguaVitamin daily news: {date_str}"
+    pr_title = email_subject = f"LinguaVitamin daily news: {branch_name}"
     pr_url = None
     if github_token and args.github_repo:
         try:
@@ -173,7 +174,6 @@ def main():
         else:
             print("Failed to create PR.")
 
-    email_subject = pr_title
     email_body = (
         f"Daily news has been pushed and PR created: {pr_url if pr_url else 'N/A'}"
     )

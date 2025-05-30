@@ -177,7 +177,7 @@ def main():
         df[f"content-{source}"].append(content)
 
         summary = title
-        for target in ("en", "zh"):
+        for target in ("de", "en", "zh"):
             if target in args.target_langs:
                 temp = art["translations"][target]["title"]
                 summary += f" | {temp}"

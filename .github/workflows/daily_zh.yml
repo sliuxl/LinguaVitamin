@@ -1,0 +1,44 @@
+name: Daily LinguaVitamin News Run
+
+on:
+  schedule:
+    - cron: "30 14 * * *"       # Runs daily at 07:30 PDT
+  workflow_dispatch:            # Also allows manual triggering
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -e .
+
+      - name: Run main script
+        env:
+          SMTP_SERVER:          ${{ secrets.SMTP_SERVER }}
+          SMTP_USER:            ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL:           ${{ secrets.FROM_EMAIL }}
+          TO_EMAILS:            ${{ secrets.TO_EMAILS }}
+        run: |
+          python src/lingua_vitamin/main.py \
+            --smtp_server       "$SMTP_SERVER" \
+            --smtp_user         "$SMTP_USER" \
+            --smtp_password     "$SMTP_PASSWORD" \
+            --from_email        "$FROM_EMAIL" \
+            --to_emails         "$TO_EMAILS" \
+            \
+            --num_articles 5 \
+            --source_lang de \
+            --target_langs en es fr zh \
+            --github_repo liuxl/LinguaVitamin

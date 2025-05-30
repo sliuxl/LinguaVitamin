@@ -13,6 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set Git identity
+        run: |
+          git config --global user.email "bot@users.noreply.github.com"
+          git config --global user.name "LinguaVitamin Bot"
+
+      - name: Authenticate with GitHub
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+      - name: Delete remote branch for today
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          git push origin --delete AUTO--news--de--$TODAY || true
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -25,6 +39,7 @@ jobs:
 
       - name: Run main script
         env:
+          GITHUB_TOKEN:         ${{ secrets.GITHUB_TOKEN }}
           SMTP_SERVER:          ${{ secrets.SMTP_SERVER }}
           SMTP_USER:            ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
@@ -33,11 +48,12 @@ jobs:
           NUM_ARTICLES:         ${{ secrets.NUM_ARTICLES }}
         run: |
           python src/lingua_vitamin/main.py \
+            --github_token      $GITHUB_TOKEN \
             --smtp_server       "$SMTP_SERVER" \
             --smtp_user         "$SMTP_USER" \
             --smtp_password     "$SMTP_PASSWORD" \
             --from_email        "$FROM_EMAIL" \
-            --to_emails         "$TO_EMAILS" \
+            --to_emails         $TO_EMAILS \
             --num_articles      $NUM_ARTICLES \
             \
             --source_lang de \

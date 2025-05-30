@@ -30,6 +30,7 @@ jobs:
           SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
           FROM_EMAIL:           ${{ secrets.FROM_EMAIL }}
           TO_EMAILS:            ${{ secrets.TO_EMAILS }}
+          NUM_ARTICLES:         ${{ secrets.NUM_ARTICLES }}
         run: |
           python src/lingua_vitamin/main.py \
             --smtp_server       "$SMTP_SERVER" \
@@ -37,8 +38,8 @@ jobs:
             --smtp_password     "$SMTP_PASSWORD" \
             --from_email        "$FROM_EMAIL" \
             --to_emails         "$TO_EMAILS" \
+            --num_articles      $NUM_ARTICLES \
             \
-            --num_articles 5 \
             --source_lang de \
             --target_langs en es fr zh \
             --github_repo sliuxl/LinguaVitamin

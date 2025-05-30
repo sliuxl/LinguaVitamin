@@ -82,8 +82,14 @@ def git_run(*args):
 
 def create_branch_and_push(branch_name, file_path, base_branch):
     """Create branch and push."""
-    git_run("checkout", base_branch)
-    git_run("pull", "origin", base_branch)
+    logging.info(
+        "Create a new branch (branch, base) = (%s, %s): %s.",
+        branch_name,
+        base_branch,
+        file_path,
+    )
+    # git_run("checkout", base_branch)
+    # git_run("pull", "origin", base_branch)
 
     git_run("checkout", "-b", branch_name)
     git_run("add", file_path)

@@ -21,6 +21,12 @@ def create_github_pr(
     github_token: str,
 ):
     """Create a pull request on GitHub."""
+    logging.info(
+        "Create a PR for (repo, branch, base) = (%s, %s, %s).",
+        repo_name,
+        branch,
+        base_branch,
+    )
     repo = Github(github_token).get_repo(repo_name)
 
     try:

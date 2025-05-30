@@ -57,5 +57,5 @@ jobs:
             --num_articles      $NUM_ARTICLES \
             \
             --source_lang de \
-            --target_langs en es fr zh \
+            --target_langs en zh \
             --github_repo sliuxl/LinguaVitamin

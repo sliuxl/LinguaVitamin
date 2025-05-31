@@ -67,3 +67,11 @@ jobs:
             --output_root /tmp/LinguaVitaminNews \
             --output_md  _posts/news/{year}/{month} \
             --output_csv csv/news/{year}/{month}
+
+      - name: Merge PR for LinguaVitaminNews
+        run: |
+          cd /tmp/LinguaVitaminNews
+          TODAY=$(date +%Y-%m-%d)
+          BRANCH=AUTO--$TODAY--news-en
+          git push origin $BRANCH:main || true
+          git push origin --delete $BRANCH || true

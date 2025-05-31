@@ -7,6 +7,8 @@ from parameterized import parameterized
 from lingua_vitamin.news import fetcher
 
 
+_FACTOR = 1
+
 LOGGING_FORMAT = "%(asctime)s [%(filename)s:%(lineno)d] %(levelname)s - %(message)s"
 
 
@@ -15,9 +17,9 @@ class TestFetcher(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ("en", 3),
+            ("en", 3 * _FACTOR),
             ("es", 1),
-            ("de", 2),
+            ("de", 2 * _FACTOR),
             ("zh", 4),
         ]
     )

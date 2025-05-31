@@ -1,5 +1,6 @@
 """Translate with HF models."""
 
+import logging
 from typing import List
 
 import torch
@@ -38,5 +39,10 @@ class Translator:
 
     def translate(self, texts: List[str]) -> List[str]:
         """Translate with HF models."""
-        results = self.translator(list(texts))
+        try:
+            results = self.translator(list(texts))
+        except Exception as error:
+            logging.exception("Unable to translate `%s`: <<<%s>>>.", texts, error)
+            return None
+
         return [r[_KEY_TEXT] for r in results]

@@ -181,12 +181,25 @@ def main():
 
         translations = {}
         for target, trans in translators.items():
+            # If either is too long, we'll skip its translation.
+            gen_title = trans.translate([article["title"]])
+            if gen_title is None:
+                continue
+            gen_content = trans.translate([content]) if content.strip() else [""]
+            if gen_content is None:
+                continue
+
             translations[target] = {
-                "title": trans.translate([article["title"]])[0],
-                "content": trans.translate([content])[0] if content.strip() else "",
+                "title": gen_title[0],
+                "content": gen_content[0],
             }
 
-        translated_articles.append({"original": article, "translations": translations})
+        if translations:
+            translated_articles.append(
+                {"original": article, "translations": translations}
+            )
+        else:
+            logging.warning("No valid translation for article: `%s`.", article)
 
     language_map = {
         "de": "German",

@@ -63,6 +63,18 @@ class TestTranslator(unittest.TestCase):
         with self.assertRaises(ValueError):
             translator.Translator(src, target)
 
+    _LONG = " ".join(str(i) for i in range(512))
+
+    @parameterized.expand(
+        [
+            ("de", "en", _LONG),
+            ("en", "de", _LONG),
+        ]
+    )
+    def test_translate_none(self, src: str, target: str, text):
+        """Unit tests for translate: None for long sequences."""
+        self.assertIsNone(translator.Translator(src, target).translate((text,)))
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)

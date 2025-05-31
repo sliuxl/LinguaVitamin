@@ -29,7 +29,7 @@ jobs:
           git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminNews.git /tmp/LinguaVitaminNews
           cd /tmp/LinguaVitaminNews
           TODAY=$(date +%Y-%m-%d)
-          git push origin --delete AUTO--news-en--$TODAY || true
+          git push origin --delete AUTO--$TODAY--news-en || true
 
       - name: Set up Python
         uses: actions/setup-python@v4

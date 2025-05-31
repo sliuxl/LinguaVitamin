@@ -19,8 +19,6 @@ MAX_SEQ_LENS = {
 RSS_FEEDS = {
     "de": (
         "https://rss.dw.com/xml/rss-de-top",
-        # SPIEGEL ONLINE Main Feed
-        "http://www.spiegel.de/schlagzeilen/rss/0,5291,676,00.xml",
         # Academic and Institutional Feeds
         # - Max Delbrück Center (MDC)
         "https://www.mdc-berlin.de/de/rss/articles/news",
@@ -28,7 +26,8 @@ RSS_FEEDS = {
         "https://www.bmz.de/de/feed.rss",
         # Zeit Online
         "https://newsfeed.zeit.de/index",
-        "https://www.deutschland.de/en/feed-news/rss.xml",
+        # "https://www.deutschland.de/en/feed-news/rss.xml",
+        "https://www.deutschland.de/de/feed-news/rss.xml",
         "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml",
     ),
     "en": (

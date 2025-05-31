@@ -1,18 +1,12 @@
 """Main."""
 
-from collections import defaultdict
 import logging
 import os
-import sys
-import subprocess
 
 import argparse
-import datetime
 from dotenv import load_dotenv
-import pandas as pd
 
-from lingua_vitamin.news import fetcher
-from lingua_vitamin.translate.translator import Translator
+from lingua_vitamin import pipe
 from lingua_vitamin.common import utils
 
 
@@ -88,41 +82,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def git_run(*args):
-    """Run git command and print output"""
-    result = subprocess.run(["git"] + list(args), capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"Git command failed: git {' '.join(args)}")
-        print(result.stderr)
-        sys.exit(1)
-    return result.stdout.strip()
-
-
-def create_branch_and_push(root_dir, branch_name, file_path, base_branch):
-    """Create branch and push."""
-    logging.info("pwd: `%s`", os.getcwd())
-    if root_dir not in ("", ".", "./"):
-        os.chdir(root_dir)
-        logging.info("pwd: `%s`", os.getcwd())
-
-    logging.info(
-        "Create a new branch (branch, base) = (%s, %s): %s.",
-        branch_name,
-        base_branch,
-        file_path,
-    )
-    # git_run("checkout", base_branch)
-    # git_run("pull", "origin", base_branch)
-
-    git_run("checkout", "-b", branch_name)
-    if isinstance(file_path, str):
-        file_path = [file_path]
-    for file in file_path:
-        git_run("add", file)
-    git_run("commit", "-m", f"Add daily news for {branch_name}")
-    git_run("push", "-u", "origin", branch_name)
-
-
 def main():
     """Main."""
     load_dotenv()
@@ -134,139 +93,20 @@ def main():
             "GitHub token not provided via --github_token or GITHUB_TOKEN env"
         )
 
-    # Filenames
-    date = datetime.date.today()
-    date_str = date.isoformat()
-    kwargs = {
-        "year": f"{date.year:04d}",
-        "month": f"{date.month:02d}",
-        "day": f"{date.day:02d}",
-        "source": args.source_lang,
-        # news
-        "category": args.output_md.split("/")[1],
-    }
-    # YYYY-MM-DD--news-de
-    branch_name_suffix = "{year}-{month}-{day}--{category}-{source}".format(**kwargs)
-    # _posts/news/markdown/YYYY/MM/YYYY-MM-DD--news-de.md
-    md_path = os.path.join(
-        args.output_root, args.output_md, branch_name_suffix + _SUFFIX_MD
-    ).format(**kwargs)
-    # csv/news/YYYY/MM/YYYY-MM-DD--news-de.md
-    csv_path = os.path.join(
-        args.output_root, args.output_csv, branch_name_suffix + _SUFFIX_CSV
-    ).format(**kwargs)
-
-    # AUTO--YYYY-MM-DD--news-de
-    branch_name = f"AUTO--{branch_name_suffix}"
-
-    os.makedirs(os.path.dirname(md_path), exist_ok=True)
-    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-
-    # Articles
-    articles = fetcher.fetch_top_news_rss(
-        lang=args.source_lang, top_n=args.num_articles
+    category = args.output_md.split("/")[1]
+    date_str, branch_name, md_path, csv_path = pipe.get_filenames(
+        args, tag=f"{category}-{args.source_lang}"
     )
-    if not articles:
-        logging.warning("No articles fetched, exiting.")
+
+    if pipe.run_news(args, md_path, csv_path, date_str) is None:
+        logging.warning("Nothing to process: Early stop.")
         return
-
-    translators = {
-        target: Translator(args.source_lang, target) for target in args.target_langs
-    }
-
-    translated_articles = []
-    for article in articles:
-        # Seems probablematic for empty content.
-        content = article["content"]
-
-        translations = {}
-        for target, trans in translators.items():
-            # If either is too long, we'll skip its translation.
-            gen_title = trans.translate([article["title"]])
-            if gen_title is None:
-                continue
-            gen_content = trans.translate([content]) if content.strip() else [""]
-            if gen_content is None:
-                continue
-
-            translations[target] = {
-                "title": gen_title[0],
-                "content": gen_content[0],
-            }
-
-        if translations:
-            translated_articles.append(
-                {"original": article, "translations": translations}
-            )
-        else:
-            logging.warning("No valid translation for article: `%s`.", article)
-
-    language_map = {
-        "de": "German",
-        "en": "English",
-        "es": "Spanish",
-        "fr": "French",
-        "zh": "Chinese",
-    }
-    language = language_map.get(args.source_lang, "")
-
-    template = f"""
----
-title: {language} News for {date_str}
-date: {date_str}
-layout: post
----
-    """.strip()
-
-    lines = [
-        template + "\n\n",
-        "\n\n",
-    ]
-    toc = []
-    df = defaultdict(lambda: [])
-    for i, art in enumerate(translated_articles):
-        source = args.source_lang
-        lines.append(f"## Article {i}\n")
-        lines.append(f"### Original ({source}):\n")
-
-        title, content = art["original"]["title"], art["original"]["content"]
-        lines.append(f"**Title:** {title}\n\n")
-        lines.append(f"{content}\n\n")
-        df[f"title-{source}"].append(title)
-        df[f"content-{source}"].append(content)
-
-        summary = title
-        for target in ("de", "en", "zh"):
-            if target in args.target_langs:
-                temp = art["translations"][target]["title"]
-                summary += f" | {temp}"
-        summary = f"[[{i:02d}] {summary}](#article-{i})"
-        toc.append(summary)
-
-        for target, trans in art["translations"].items():
-            lines.append(f"### Translation ({target}):\n")
-            title, content = trans["title"], trans["content"]
-            lines.append(f"**Title:** {title}\n\n")
-            lines.append(f"{content}\n\n")
-            df[f"title-{target}"].append(title)
-            df[f"content-{target}"].append(content)
-        lines.append("---\n\n")
-
-    lines = lines[:1] + ["\n".join(f"- {t}" for t in toc)] + lines[1:]
-    content = "".join(lines)
-    with open(md_path, "w", encoding="utf-8") as f:
-        f.write(content)
-
-    df = pd.DataFrame.from_dict(data=df)
-    df.to_csv(csv_path)
-
-    logging.info("Daily news written to `%s`.", md_path)
 
     pr_title = email_subject = f"LinguaVitamin daily news: {branch_name}"
     pr_url = None
     if github_token and args.github_repo:
         try:
-            create_branch_and_push(
+            pipe.create_branch_and_push(
                 args.output_root, branch_name, (md_path, csv_path), args.base_branch
             )
 

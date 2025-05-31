@@ -20,12 +20,16 @@ jobs:
 
       - name: Authenticate with GitHub
         run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/sliuxl/LinguaVitaminNews.git
 
-      - name: Delete remote branch for today
+      - name: Clone LinguaVitaminNews
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminNews.git /tmp/LinguaVitaminNews
+          cd /tmp/LinguaVitaminNews
           TODAY=$(date +%Y-%m-%d)
-          git push origin --delete AUTO--news--en--$TODAY || true
+          git push origin --delete AUTO--news-en--$TODAY || true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -39,7 +43,7 @@ jobs:
 
       - name: Run main script
         env:
-          GITHUB_TOKEN:         ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN:         ${{ secrets.GH_TOKEN }}
           SMTP_SERVER:          ${{ secrets.SMTP_SERVER }}
           SMTP_USER:            ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
@@ -58,4 +62,8 @@ jobs:
             \
             --source_lang en \
             --target_langs de es fr zh \
-            --github_repo sliuxl/LinguaVitamin
+            --github_repo sliuxl/LinguaVitaminNews \
+            \
+            --output_root /tmp/LinguaVitaminNews \
+            --output_md  _posts/news/{year}/{month} \
+            --output_csv csv/news/{year}/{month}

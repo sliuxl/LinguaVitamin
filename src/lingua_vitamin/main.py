@@ -16,6 +16,10 @@ from lingua_vitamin.translate.translator import Translator
 from lingua_vitamin.common import utils
 
 
+_SUFFIX_CSV = ".csv"
+_SUFFIX_MD = ".md"
+
+
 def parse_args():
     """Parse args."""
     parser = argparse.ArgumentParser(
@@ -34,9 +38,21 @@ def parse_args():
         help="Target language codes",
     )
     parser.add_argument(
-        "--output_dir",
+        "--output_root",
         type=str,
-        default="output/news",
+        default="",
+        help="Directory to save markdown files",
+    )
+    parser.add_argument(
+        "--output_md",
+        type=str,
+        default="_posts/news/markdown",
+        help="Directory to save markdown files",
+    )
+    parser.add_argument(
+        "--output_csv",
+        type=str,
+        default="csv/news",
         help="Directory to save markdown files",
     )
     parser.add_argument(
@@ -82,8 +98,13 @@ def git_run(*args):
     return result.stdout.strip()
 
 
-def create_branch_and_push(branch_name, file_path, base_branch):
+def create_branch_and_push(root_dir, branch_name, file_path, base_branch):
     """Create branch and push."""
+    logging.info("pwd: `%s`", os.getcwd())
+    if root_dir not in ("", ".", "./"):
+        os.chdir(root_dir)
+        logging.info("pwd: `%s`", os.getcwd())
+
     logging.info(
         "Create a new branch (branch, base) = (%s, %s): %s.",
         branch_name,
@@ -116,19 +137,27 @@ def main():
     # Filenames
     date = datetime.date.today()
     date_str = date.isoformat()
-    # news--de--YYYY-MM-DD
-    branch_name = f"{os.path.basename(args.output_dir)}--{args.source_lang}--{date_str}"
-    # markdown/YYYY/MM
-    md_filename = os.path.join(
-        f"markdown/{date.year:04d}/{date.month:02d}", f"{branch_name}"
-    )
-    # AUTO--news--de--YYYY-MM-DD
-    branch_name = f"AUTO--{branch_name}"
-    # output/news/markdown/YYYY/MM/news--de--YYYY-MM-DD.md
-    md_path = os.path.join(args.output_dir, md_filename)
+    kwargs = {
+        "year": f"{date.year:04d}",
+        "month": f"{date.month:02d}",
+        "day": f"{date.day:02d}",
+        "source": args.source_lang,
+        # news
+        "category": args.output_md.split("/")[1],
+    }
+    # de--YYYY-MM-DD
+    branch_name_suffix = "{category}-{source}--{year}-{month}-{day}".format(**kwargs)
+    # _posts/news/markdown/YYYY/MM/news-de--YYYY-MM-DD.md
+    md_path = os.path.join(
+        args.output_root, args.output_md, branch_name_suffix + _SUFFIX_MD
+    ).format(**kwargs)
+    # csv/news/YYYY/MM/news-de--YYYY-MM-DD.md
+    csv_path = os.path.join(
+        args.output_root, args.output_csv, branch_name_suffix + _SUFFIX_CSV
+    ).format(**kwargs)
 
-    csv_path = md_path.replace("/markdown/", "/csv/") + ".csv"
-    md_path += ".md"
+    # AUTO--news-de--YYYY-MM-DD
+    branch_name = f"AUTO--{branch_name_suffix}"
 
     os.makedirs(os.path.dirname(md_path), exist_ok=True)
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
@@ -207,7 +236,9 @@ def main():
     pr_url = None
     if github_token and args.github_repo:
         try:
-            create_branch_and_push(branch_name, (md_path, csv_path), args.base_branch)
+            create_branch_and_push(
+                args.output_root, branch_name, (md_path, csv_path), args.base_branch
+            )
 
             pr_body = f"Auto-generated daily news translations for {date_str}."
 

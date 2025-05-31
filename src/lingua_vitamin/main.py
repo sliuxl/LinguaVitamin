@@ -145,18 +145,18 @@ def main():
         # news
         "category": args.output_md.split("/")[1],
     }
-    # de--YYYY-MM-DD
+    # YYYY-MM-DD--news-de
     branch_name_suffix = "{year}-{month}-{day}--{category}-{source}".format(**kwargs)
-    # _posts/news/markdown/YYYY/MM/news-de--YYYY-MM-DD.md
+    # _posts/news/markdown/YYYY/MM/YYYY-MM-DD--news-de.md
     md_path = os.path.join(
         args.output_root, args.output_md, branch_name_suffix + _SUFFIX_MD
     ).format(**kwargs)
-    # csv/news/YYYY/MM/news-de--YYYY-MM-DD.md
+    # csv/news/YYYY/MM/YYYY-MM-DD--news-de.md
     csv_path = os.path.join(
         args.output_root, args.output_csv, branch_name_suffix + _SUFFIX_CSV
     ).format(**kwargs)
 
-    # AUTO--news-de--YYYY-MM-DD
+    # AUTO--YYYY-MM-DD--news-de
     branch_name = f"AUTO--{branch_name_suffix}"
 
     os.makedirs(os.path.dirname(md_path), exist_ok=True)

@@ -9,6 +9,13 @@ KEY_TITLE = "title"
 KEY_CONTENT = "content"
 
 
+MAX_SEQ_LENS = {
+    # https://github.com/sliuxl/LinguaVitamin/actions/runs/15366626789/job/43240373877
+    # Token indices sequence length is longer than the specified maximum sequence length for this model (1163 > 512). Running this sequence through the model will result in indexing errors
+    "de": 512,
+    "en": 512,
+}
+
 RSS_FEEDS = {
     "de": (
         "https://rss.dw.com/xml/rss-de-top",
@@ -42,6 +49,11 @@ RSS_FEEDS = {
 }
 
 
+def _get_len(content):
+    """Get len for a str."""
+    return len(content.strip().split())
+
+
 def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]:
     """
     Fetch top n news items from RSS feed of the given language.
@@ -57,6 +69,9 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
 
     if not urls:
         raise ValueError(f"No RSS feed configured for language '{lang}'")
+
+    max_len_limit = MAX_SEQ_LENS.get(lang, 0)
+    max_len = 0
 
     news_items = []
     titles = set()
@@ -80,7 +95,6 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
             if title in titles:
                 logging.warning("Duplicate title: `%s`.", title)
                 continue
-            titles.add(title)
 
             # Use summary/detail if available, fallback to empty string
             content = (
@@ -88,6 +102,22 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
                 or entry.get("description")
                 or (entry.get("content")[0].value if entry.get("content") else "")
             )
+
+            if max_len_limit and (
+                _get_len(content) > max_len_limit or _get_len(title) > max_len_limit
+            ):
+                logging.warning(
+                    "News is too long (title: `%s`): len = (%d, %d) > %d.",
+                    title,
+                    _get_len(title),
+                    _get_len(content),
+                    max_len_limit,
+                )
+                continue
+
+            max_len = max(max_len, _get_len(title), _get_len(content))
+
+            titles.add(title)
             news_items.append({KEY_TITLE: title, KEY_CONTENT: content})
 
             if len(news_items) >= top_n:
@@ -100,5 +130,6 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
         logging.warning(
             "Insufficient number of news: len = %d < %d.", len(news_items), top_n
         )
+    logging.info("[%s] Max len for %d news = %d.", lang, len(news_items), max_len)
 
     return news_items

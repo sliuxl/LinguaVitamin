@@ -188,8 +188,25 @@ def main():
 
         translated_articles.append({"original": article, "translations": translations})
 
+    language_map = {
+        "de": "German",
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "zh": "Chinese",
+    }
+    language = language_map.get(args.source_lang, "")
+
+    template = f"""
+---
+title: {language} News for {date_str}
+date: {date_str}
+layout: post
+---
+    """.strip()
+
     lines = [
-        f"# LinguaVitamin Daily News - {date_str}\n\n",
+        template + "\n\n",
         "\n\n",
     ]
     toc = []

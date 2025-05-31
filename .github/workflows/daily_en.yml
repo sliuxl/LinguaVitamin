@@ -2,7 +2,7 @@ name: Daily LinguaVitamin News (en) Run
 
 on:
   schedule:
-    - cron: "35 14 * * *"       # Runs daily at 07:35 PDT
+    - cron: "30 15 * * *"       # Runs daily at 08:30 PDT
   workflow_dispatch:            # Also allows manual triggering
 
 jobs:

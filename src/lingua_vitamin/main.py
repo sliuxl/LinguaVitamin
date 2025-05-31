@@ -146,7 +146,7 @@ def main():
         "category": args.output_md.split("/")[1],
     }
     # de--YYYY-MM-DD
-    branch_name_suffix = "{category}-{source}--{year}-{month}-{day}".format(**kwargs)
+    branch_name_suffix = "{year}-{month}-{day}--{category}-{source}".format(**kwargs)
     # _posts/news/markdown/YYYY/MM/news-de--YYYY-MM-DD.md
     md_path = os.path.join(
         args.output_root, args.output_md, branch_name_suffix + _SUFFIX_MD

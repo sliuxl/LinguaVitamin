@@ -73,5 +73,5 @@ jobs:
           cd /tmp/LinguaVitaminNews
           TODAY=$(date +%Y-%m-%d)
           BRANCH=AUTO--$TODAY--news-de
-          git push origin $BRANCH:main || true
+          git push origin $BRANCH:main
           git push origin --delete $BRANCH || true

@@ -72,5 +72,5 @@ jobs:
           cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
           BRANCH=AUTO--$TODAY--arxiv-cs__DC
-          git push origin $BRANCH:main || true
+          git push origin $BRANCH:main
           git push origin --delete $BRANCH || true

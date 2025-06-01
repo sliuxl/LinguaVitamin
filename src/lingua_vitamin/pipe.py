@@ -15,6 +15,7 @@ from lingua_vitamin.news import fetcher as news_fetcher
 from lingua_vitamin.translate.translator import Translator
 
 
+_BATCH_MODE = -1
 _SUFFIX_CSV = ".csv"
 _SUFFIX_MD = ".md"
 
@@ -113,6 +114,37 @@ def _translate_text(trans, text):
     return gen_text[0]
 
 
+def split_batches(lst, batch_size: int = 5):
+    """Split into batches."""
+    return [lst[i : i + batch_size] for i in range(0, len(lst), batch_size)]
+
+
+def _translate_texts(trans, texts, batch: int = 1):
+    """Batch mode."""
+    results = []
+
+    logging.info(
+        "Translation in batch mode: bs = %d for %d texts ...", batch, len(texts)
+    )
+
+    if batch == 1:
+        for text in texts:
+            results.append(_translate_text(trans, text))
+        return results
+
+    if batch == _BATCH_MODE or len(texts) <= batch:
+        results = trans.translate(texts)
+        if results is None:
+            return [None] * len(texts)
+        return results
+
+    # Any other batch values
+    groups = split_batches(texts, batch)
+    for group in groups:
+        results += _translate_texts(trans, group, batch=_BATCH_MODE)
+    return results
+
+
 def _translate_news(articles, source_lang: str, target_langs):
     translators = {target: Translator(source_lang, target) for target in target_langs}
 
@@ -155,12 +187,28 @@ def _translate_papers(df, column, target_langs, source_lang="en"):
 
     titles = df[column]
     abstracts = df[KEY_ABSTRACT]
-    for title, abstract in zip(titles, abstracts):
-        for target, trans in translators.items():
-            aug_titles[target].append(_translate_text(trans, title) or "")
 
-            if target in ("zh",):
-                aug_abstracts[target].append(_translate_text(trans, abstract) or "")
+    for target, trans in translators.items():
+        logging.info("Processing target lang: `%s` ...", target)
+        # Global batch mode for `title`
+        for index, batch_size in (1500, 5):
+            new_titles = _translate_texts(trans, titles, batch=batch_size)
+
+            if all(t is None for t in new_titles):
+                logging.warning(
+                    "Batch size %d: All none values for the translation.", batch_size
+                )
+                if index == 0:
+                    continue
+
+            aug_titles[target] = [(t or "") for t in new_titles]
+            break
+
+        # Batch mode for `abstract`: bs = 5
+        if target in ("zh",):
+            aug_abstracts[target] = [
+                (t or "") for t in _translate_texts(trans, abstracts, batch=5)
+            ]
 
     for target in target_langs:
         df[f"{column}-{target}"] = aug_titles[target]
@@ -348,6 +396,7 @@ def run_arxiv(args, md_path: str, csv_path: str, date_str: str):
 def main():
     """Main."""
     df = pd.read_csv("testdata/arxiv-cs__DC.csv")
+    logging.info("Translating ...")
     df = _translate_papers(df, KEY_TITLE, ("de", "zh"))
     logging.info("Columns: `%s`", list(df.columns))
     logging.info(df.transpose())

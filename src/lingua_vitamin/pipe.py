@@ -27,6 +27,8 @@ LANGUAGE_MAP = {
     "zh": "Chinese",
 }
 
+MAX_ARXIV_ABSTRACTS = 300
+
 KEY_ABSTRACT = arxiv_fetcher.KEY_ABSTRACT
 KEY_TITLE = arxiv_fetcher.KEY_TITLE
 
@@ -191,7 +193,7 @@ def _translate_papers(df, column, target_langs, source_lang="en"):
     for target, trans in translators.items():
         logging.info("Processing target lang: `%s` ...", target)
         # Global batch mode for `title`
-        for index, batch_size in (1500, 5):
+        for index, batch_size in enumerate((1500, 5)):
             new_titles = _translate_texts(trans, titles, batch=batch_size)
 
             if all(t is None for t in new_titles):
@@ -206,9 +208,15 @@ def _translate_papers(df, column, target_langs, source_lang="en"):
 
         # Batch mode for `abstract`: bs = 5
         if target in ("zh",):
-            aug_abstracts[target] = [
-                (t or "") for t in _translate_texts(trans, abstracts, batch=5)
+            new_abs = [
+                (t or "")
+                for t in _translate_texts(
+                    trans, abstracts[:MAX_ARXIV_ABSTRACTS], batch=5
+                )
             ]
+            if len(new_abs) < len(abstracts):
+                new_abs += [""] * (len(abstracts) - len(new_abs))
+            aug_abstracts[target] = new_abs
 
     for target in target_langs:
         df[f"{column}-{target}"] = aug_titles[target]

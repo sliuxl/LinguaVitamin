@@ -25,6 +25,8 @@ LANGUAGE_MAP = {
     "fr": "French",
     "zh": "Chinese",
 }
+
+KEY_ABSTRACT = arxiv_fetcher.KEY_ABSTRACT
 KEY_TITLE = arxiv_fetcher.KEY_TITLE
 
 _TEMPLATE = (
@@ -102,6 +104,15 @@ def get_filenames(args, tag):
     return date_str, branch_name, md_path, csv_path
 
 
+def _translate_text(trans, text):
+    gen_text = trans.translate([text])
+    if gen_text is None:
+        logging.warning("No valid translation for text: `%s`.", text)
+        return None
+
+    return gen_text[0]
+
+
 def _translate_news(articles, source_lang: str, target_langs):
     translators = {target: Translator(source_lang, target) for target in target_langs}
 
@@ -113,16 +124,17 @@ def _translate_news(articles, source_lang: str, target_langs):
         translations = {}
         for target, trans in translators.items():
             # If either is too long, we'll skip its translation.
-            gen_title = trans.translate([article[KEY_TITLE]])
+            gen_title = _translate_text(trans, article[KEY_TITLE])
             if gen_title is None:
                 continue
-            gen_content = trans.translate([content]) if content.strip() else [""]
+
+            gen_content = _translate_text(trans, content) if content.strip() else ""
             if gen_content is None:
                 continue
 
             translations[target] = {
-                KEY_TITLE: gen_title[0],
-                "content": gen_content[0],
+                KEY_TITLE: gen_title,
+                "content": gen_content,
             }
 
         if translations:
@@ -139,21 +151,23 @@ def _translate_papers(df, column, target_langs, source_lang="en"):
     translators = {target: Translator(source_lang, target) for target in target_langs}
 
     aug_titles = defaultdict(lambda: [])
+    aug_abstracts = defaultdict(lambda: [])
 
     titles = df[column]
-    for title in titles:
+    abstracts = df[KEY_ABSTRACT]
+    for title, abstract in zip(titles, abstracts):
         for target, trans in translators.items():
-            gen_title = trans.translate([title])
-            if gen_title is None:
-                logging.warning("No valid translation for title: `%s`.", title)
-                gen_title = ""
-            else:
-                gen_title = gen_title[0]
+            aug_titles[target].append(_translate_text(trans, title) or "")
 
-            aug_titles[target].append(gen_title)
+            if target in ("zh",):
+                aug_abstracts[target].append(_translate_text(trans, abstract) or "")
 
     for target in target_langs:
         df[f"{column}-{target}"] = aug_titles[target]
+
+        col = f"{KEY_ABSTRACT}-{target}"
+        if target in aug_abstracts:
+            df[col] = aug_abstracts[target]
 
     return df
 
@@ -249,7 +263,7 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
         lines.append(f"## Article {i}\n")
 
         title = row[KEY_TITLE]
-        abstract = row[arxiv_fetcher.KEY_ABSTRACT]
+        abstract = row[KEY_ABSTRACT]
         date = row[arxiv_fetcher.KEY_DATE][:10]
         authors = row[arxiv_fetcher.KEY_AUTHORS]
         url = row[arxiv_fetcher.KEY_URL]
@@ -324,7 +338,8 @@ def main():
     """Main."""
     df = pd.read_csv("testdata/arxiv-cs__DC.csv")
     df = _translate_papers(df, KEY_TITLE, ("de", "zh"))
-    logging.info(df)
+    logging.info("Columns: `%s`", list(df.columns))
+    logging.info(df.transpose())
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ _DATE = "2025-06-01"
 
 _MD_CONTENT_DE = """
 ---
-title: German News for 2025-06-01
+title: German News for 2025-06-01: 003
 date: 2025-06-01
 layout: post
 ---
@@ -83,7 +83,7 @@ The future federal government is likely to have a lot of financial room for mano
 
 _MD_CONTENT_EN = """
 ---
-title: English News for 2025-06-01
+title: English News for 2025-06-01: 002
 date: 2025-06-01
 layout: post
 ---
@@ -131,7 +131,7 @@ Los Angeles Dodgers star shortstop Mookie Betts soll sich den Zeh gebrochen habe
 
 _MD_CONTENT_ARXIV_DC = """
 ---
-title: cs.DC @ 2025-06-01
+title: cs.DC @ 2025-06-01: 001
 date: 2025-06-01
 layout: post
 ---
@@ -151,7 +151,7 @@ This paper envisions 6G as a self-evolving telecom ecosystem, where AI-driven in
 
 _MD_CONTENT_ARXIV_PL = r"""
 ---
-title: cs.PL @ 2025-06-01
+title: cs.PL @ 2025-06-01: 003
 date: 2025-06-01
 layout: post
 ---

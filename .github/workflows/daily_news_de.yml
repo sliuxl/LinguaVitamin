@@ -1,4 +1,4 @@
-name: Daily LinguaVitamin News Run
+name: Daily LinguaVitamin News (de) Run
 
 on:
   schedule:

@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 
 from lingua_vitamin.arxiv import fetcher as arxiv_fetcher
+from lingua_vitamin.common import utils
 from lingua_vitamin.news import fetcher as news_fetcher
 from lingua_vitamin.translate.translator import Translator
 
@@ -24,6 +25,7 @@ LANGUAGE_MAP = {
     "fr": "French",
     "zh": "Chinese",
 }
+KEY_TITLE = arxiv_fetcher.KEY_TITLE
 
 _TEMPLATE = (
     """
@@ -111,7 +113,7 @@ def _translate_news(articles, source_lang: str, target_langs):
         translations = {}
         for target, trans in translators.items():
             # If either is too long, we'll skip its translation.
-            gen_title = trans.translate([article["title"]])
+            gen_title = trans.translate([article[KEY_TITLE]])
             if gen_title is None:
                 continue
             gen_content = trans.translate([content]) if content.strip() else [""]
@@ -119,7 +121,7 @@ def _translate_news(articles, source_lang: str, target_langs):
                 continue
 
             translations[target] = {
-                "title": gen_title[0],
+                KEY_TITLE: gen_title[0],
                 "content": gen_content[0],
             }
 
@@ -131,6 +133,29 @@ def _translate_news(articles, source_lang: str, target_langs):
             logging.warning("No valid translation for article: `%s`.", article)
 
     return translated_articles
+
+
+def _translate_papers(df, column, target_langs, source_lang="en"):
+    translators = {target: Translator(source_lang, target) for target in target_langs}
+
+    aug_titles = defaultdict(lambda: [])
+
+    titles = df[column]
+    for title in titles:
+        for target, trans in translators.items():
+            gen_title = trans.translate([title])
+            if gen_title is None:
+                logging.warning("No valid translation for title: `%s`.", title)
+                gen_title = ""
+            else:
+                gen_title = gen_title[0]
+
+            aug_titles[target].append(gen_title)
+
+    for target in target_langs:
+        df[f"{column}-{target}"] = aug_titles[target]
+
+    return df
 
 
 def convert_news_csv_to_md(csv_path, md_path, date_str, source_lang, target_langs):
@@ -186,11 +211,11 @@ def run_news(args, md_path: str, csv_path: str, date_str: str):
 
     df = defaultdict(lambda: [])
     for article in trans_articles:
-        df[f"title-{args.source_lang}"].append(article["original"]["title"])
+        df[f"title-{args.source_lang}"].append(article["original"][KEY_TITLE])
         df[f"content-{args.source_lang}"].append(article["original"]["content"])
 
         for target, trans in article["translations"].items():
-            df[f"title-{target}"].append(trans["title"])
+            df[f"title-{target}"].append(trans[KEY_TITLE])
             df[f"content-{target}"].append(trans["content"])
 
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
@@ -217,24 +242,32 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
     for i, row in df.iterrows():
         lines.append(f"## Article {i}\n")
 
-        title = row[arxiv_fetcher.KEY_TITLE]
+        title = row[KEY_TITLE]
         abstract = row[arxiv_fetcher.KEY_ABSTRACT]
         date = row[arxiv_fetcher.KEY_DATE][:10]
         authors = row[arxiv_fetcher.KEY_AUTHORS]
         url = row[arxiv_fetcher.KEY_URL]
 
+        short_title = title
         short_date = "-".join(date.split("-")[1:])
         short_url = url.split("/")[-1]
 
-        lines.append(f"### Title@{date}: {title}\n")
+        for lang in ("de", "zh"):
+            col = f"{KEY_TITLE}-{lang}"
+            title += " |"
+            if col in row:
+                title += f" {row[col]}"
+
+        # TOC
+        toc.append(
+            f"[{i:02d}](#article-{i}) | {short_date} | {title} | [{short_url}]({url})"
+        )
+
+        # Body
+        lines.append(f"### Title@{date}: {short_title}\n")
         lines.append(
             f"**Title**: {title} [{short_url}]({url})\n\n**Authors**: {authors}\n\n{abstract}\n\n"
         )
-
-        summary = (
-            f"[{i:02d}](#article-{i}) | {short_date} | {title} | [{short_url}]({url})"
-        )
-        toc.append(summary)
 
         lines.append("---\n\n")
 
@@ -260,6 +293,9 @@ def run_arxiv(args, md_path: str, csv_path: str, date_str: str):
         return None
 
     df = pd.DataFrame(papers)
+    df = _translate_papers(
+        df, KEY_TITLE, args.target_langs or ("de", "zh"), source_lang="en"
+    )
     df = df[sorted(df.columns)]
 
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
@@ -269,3 +305,15 @@ def run_arxiv(args, md_path: str, csv_path: str, date_str: str):
     convert_arxiv_csv_to_md(csv_path, md_path, date_str, args.arxiv)
 
     return md_path, csv_path
+
+
+def main():
+    """Main."""
+    df = pd.read_csv("testdata/arxiv-cs__DC.csv")
+    df = _translate_papers(df, KEY_TITLE, ("de", "zh"))
+    logging.info(df)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format=utils.LOGGING_FORMAT)
+    main()

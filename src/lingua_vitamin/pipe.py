@@ -70,7 +70,7 @@ def create_branch_and_push(root_dir, branch_name, file_path, base_branch):
         file_path = [file_path]
     for file in file_path:
         _git_run("add", file)
-    _git_run("commit", "-m", f"Add daily news for {branch_name}")
+    _git_run("commit", "-m", f"Add {branch_name}.")
     _git_run("push", "-u", "origin", branch_name)
 
 

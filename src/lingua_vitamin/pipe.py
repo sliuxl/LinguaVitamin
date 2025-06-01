@@ -30,7 +30,7 @@ KEY_TITLE = arxiv_fetcher.KEY_TITLE
 _TEMPLATE = (
     """
 ---
-title: TITLE
+title: "TITLE"
 date: DATE
 layout: post
 ---

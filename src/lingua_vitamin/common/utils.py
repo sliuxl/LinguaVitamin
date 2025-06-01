@@ -12,6 +12,42 @@ from github import Github
 LOGGING_FORMAT = "%(asctime)s [%(filename)s:%(lineno)d] %(levelname)s - %(message)s"
 
 
+def load_file(
+    filename: str, mode: str = "r", log: bool = True, fix: str = "ignore"
+) -> str:
+    """Load content from a file."""
+    if log:
+        logging.info("Reading `%s`.", filename)
+
+    if not os.path.exists(filename):
+        return None
+
+    try:
+        with open(filename, mode) as ifile:  # pylint: disable=unspecified-encoding
+            return ifile.read()
+    except Exception as error:
+        logging.exception("Unable to load file `%s`: <<<%s>>>", filename, error)
+        if "b" in mode or not fix:
+            return None
+
+    try:
+        with open(filename, f"{mode}b") as ifile:  # pylint: disable=unspecified-encoding
+            data = ifile.read()
+            if fix == "latin-1":
+                text = data.decode("latin-1")
+            else:
+                if fix != "ignore":
+                    logging.warning(
+                        "Unknown fix mode = `%s`, using ignore instead.", fix
+                    )
+                text = data.decode("utf-8", errors="ignore")
+            return text
+    except Exception as error:
+        logging.exception("[Retry] Unable to load file `%s`: <<<%s>>>", filename, error)
+
+    return None
+
+
 def create_github_pr(
     repo_name: str,
     branch: str,

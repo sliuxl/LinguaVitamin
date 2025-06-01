@@ -223,12 +223,17 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
         authors = row[arxiv_fetcher.KEY_AUTHORS]
         url = row[arxiv_fetcher.KEY_URL]
 
+        short_date = "-".join(date.split("-")[1:])
+        short_url = url.split("/")[-1]
+
         lines.append(f"### Title@{date}: {title}\n")
         lines.append(
-            f"**Title**: [{title}]({url})\n\n**Authors**: {authors}\n\n{abstract}\n\n"
+            f"**Title**: {title} [{short_url}]({url})\n\n**Authors**: {authors}\n\n{abstract}\n\n"
         )
 
-        summary = f"[{i:02d}](#article-{i}) | {date} | {title} | [{url}]({url})"
+        summary = (
+            f"[{i:02d}](#article-{i}) | {short_date} | {title} | [{short_url}]({url})"
+        )
         toc.append(summary)
 
         lines.append("---\n\n")

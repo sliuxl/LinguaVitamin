@@ -121,7 +121,7 @@ def _translate_news(articles, source_lang: str, target_langs):
     return translated_articles
 
 
-def _convert_csv_to_md(csv_path, md_path, date_str, source_lang, target_langs):
+def convert_csv_to_md(csv_path, md_path, date_str, source_lang, target_langs):
     """Convert csv to md."""
     lines = f"""
 ---
@@ -192,6 +192,6 @@ def run_news(args, md_path: str, csv_path: str, date_str: str):
     df.to_csv(csv_path)
     logging.info("Daily news written to `%s`.", csv_path)
 
-    _convert_csv_to_md(csv_path, md_path, date_str, args.source_lang, args.target_langs)
+    convert_csv_to_md(csv_path, md_path, date_str, args.source_lang, args.target_langs)
 
     return md_path, csv_path

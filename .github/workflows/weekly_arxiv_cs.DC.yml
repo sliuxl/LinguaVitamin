@@ -1,8 +1,8 @@
-name: Daily LinguaVitamin News Run
+name: Weekly LinguaVitamin arXiv (cs.DC) Run
 
 on:
   schedule:
-    - cron: "30 14 * * *"       # Runs daily at 07:30 PDT
+    - cron: "30 14 * * 5"       # Runs at 07:30 PDT on Fridays
   workflow_dispatch:            # Also allows manual triggering
 
 jobs:
@@ -20,16 +20,16 @@ jobs:
 
       - name: Authenticate with GitHub
         run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/sliuxl/LinguaVitaminNews.git
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/sliuxl/LinguaVitaminArxiv.git
 
-      - name: Clone LinguaVitaminNews
+      - name: Clone LinguaVitaminArxiv
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminNews.git /tmp/LinguaVitaminNews
-          cd /tmp/LinguaVitaminNews
+          git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminArxiv.git /tmp/LinguaVitaminArxiv
+          cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          git push origin --delete AUTO--$TODAY--news-de || true
+          git push origin --delete AUTO--$TODAY--arxiv-cs__DC || true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -49,7 +49,6 @@ jobs:
           SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
           FROM_EMAIL:           ${{ secrets.FROM_EMAIL }}
           TO_EMAILS:            ${{ secrets.TO_EMAILS }}
-          NUM_ARTICLES:         ${{ secrets.NUM_ARTICLES }}
         run: |
           python src/lingua_vitamin/main.py \
             --github_token      $GITHUB_TOKEN \
@@ -58,20 +57,19 @@ jobs:
             --smtp_password     "$SMTP_PASSWORD" \
             --from_email        "$FROM_EMAIL" \
             --to_emails         $TO_EMAILS \
-            --num_articles      $NUM_ARTICLES \
             \
-            --source_lang de \
-            --target_langs en zh \
-            --github_repo sliuxl/LinguaVitaminNews \
+            --arxiv cs.DC \
+            --arxiv_num_days 7 \
+            --github_repo sliuxl/LinguaVitaminArxiv \
             \
-            --output_root /tmp/LinguaVitaminNews \
-            --output_md  _posts/news/{year}/{month} \
-            --output_csv csv/news/{year}/{month}
+            --output_root /tmp/LinguaVitaminArxiv \
+            --output_md  _posts/arxiv/{year}/{month} \
+            --output_csv csv/arxiv/{year}/{month}
 
-      - name: Merge PR for LinguaVitaminNews
+      - name: Merge PR for LinguaVitaminArxiv
         run: |
-          cd /tmp/LinguaVitaminNews
+          cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          BRANCH=AUTO--$TODAY--news-de
+          BRANCH=AUTO--$TODAY--arxiv-cs__DC
           git push origin $BRANCH:main || true
           git push origin --delete $BRANCH || true

@@ -283,15 +283,26 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
             if col in row:
                 title += f" {row[col]}"
 
+            col = f"{KEY_ABSTRACT}-{lang}"
+            if col in row:
+                abstract += f"\n\n{row[col]}"
+
         # TOC
         toc.append(
             f"[{i:02d}](#article-{i}) | {short_date} | {title} | [{short_url}]({url})"
         )
 
         # Body
-        lines.append(f"### Title@{date} ({week_day}): {short_title}\n")
         lines.append(
-            f"**Title**: {title} [{short_url}]({url})\n\n**Authors**: {authors}\n\n{abstract}\n\n"
+            "\n\n".join(
+                (
+                    f"### Title@{date} ({week_day}): {short_title}",
+                    f"**Title**: {title} [{short_url}]({url})",
+                    f"**Authors**: {authors}",
+                    abstract,
+                    "",
+                )
+            )
         )
 
         lines.append("---\n\n")

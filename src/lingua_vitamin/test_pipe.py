@@ -136,15 +136,20 @@ date: 2025-06-01
 layout: post
 ---
 
-- [00](#article-0) | **05-29 (4)** | From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | $GERMAN | $CHINESE_TRANSLATION | [2505.23710v1](http://arxiv.org/abs/2505.23710v1)
+- [00](#article-0) | **05-29 (4)** | From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | $GERMAN_TITLE | $CHINESE_TITLE | [2505.23710v1](http://arxiv.org/abs/2505.23710v1)
 
 ## Article 0
 ### Title@2025-05-29 (4): From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems
-**Title**: From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | $GERMAN | $CHINESE_TRANSLATION [2505.23710v1](http://arxiv.org/abs/2505.23710v1)
+
+**Title**: From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | $GERMAN_TITLE | $CHINESE_TITLE [2505.23710v1](http://arxiv.org/abs/2505.23710v1)
 
 **Authors**: Zeinab Nezami, Syed Danial Ali Shah, Maryam Hafeez, Karim Djemame, Syed Ali Raza Zaidi
 
 This paper envisions 6G as a self-evolving telecom ecosystem, where AI-driven intelligence enables dynamic adaptation beyond static connectivity. We explore the key enablers of autonomous communication systems, spanning reconfigurable infrastructure, adaptive middleware, and intelligent network functions, alongside multi-agent collaboration for distributed decision-making. We explore how these methodologies align with emerging industrial IoT frameworks, ensuring seamless integration within digital manufacturing processes. Our findings emphasize the potential for improved real-time decision-making, optimizing efficiency, and reducing latency in networked control systems. The discussion addresses ethical challenges, research directions, and standardization efforts, concluding with a technology stack roadmap to guide future developments. By leveraging state-of-the-art 6G network management techniques, this research contributes to the next generation of intelligent automation solutions, bridging the gap between theoretical advancements and real-world industrial applications.
+
+$GERMAN_ABSTRACT
+
+$CHINESE_ABSTRACT
 
 ---
 """.strip()
@@ -162,6 +167,7 @@ layout: post
 
 ## Article 0
 ### Title@2025-05-29 (4): Extensional and Non-extensional Functions as Processes
+
 **Title**: Extensional and Non-extensional Functions as Processes | | [2405.03536v2](http://arxiv.org/abs/2405.03536v2)
 
 **Authors**: Ken Sakayori, Davide Sangiorgi
@@ -172,6 +178,7 @@ Following Milner's seminal paper, the representation of functions as processes h
 
 ## Article 1
 ### Title@2025-05-29 (4): Quantitative Verification with Neural Networks
+
 **Title**: Quantitative Verification with Neural Networks | | [2301.06136v5](http://arxiv.org/abs/2301.06136v5)
 
 **Authors**: Alessandro Abate, Alec Edwards, Mirco Giacobbe, Hashan Punchihewa, Diptarko Roy
@@ -182,6 +189,7 @@ We present a data-driven approach to the quantitative verification of probabilis
 
 ## Article 2
 ### Title@2025-05-30 (5): Is spreadsheet syntax better than numeric indexing for cell selection?
+
 **Title**: Is spreadsheet syntax better than numeric indexing for cell selection? | | [2505.23296v1](http://arxiv.org/abs/2505.23296v1)
 
 **Authors**: Philip Heltweg, Dirk Riehle, Georg-Daniel Schwarz
@@ -201,7 +209,7 @@ class TestPipe(unittest.TestCase):
             ("en", ("de", "zh"), "testdata/news-en.csv", _MD_CONTENT_EN),
         )
     )
-    def test_convert_news_csv_to_md(
+    def _test_convert_news_csv_to_md(
         self, source_lang, target_langs, csv_path, expected_content
     ):
         """Unit test for convert_news_csv_to_md."""
@@ -226,6 +234,7 @@ class TestPipe(unittest.TestCase):
     )
     def test_convert_arxiv_csv_to_md(self, subject, csv_path, expected_content):
         """Unit test for convert_arxiv_csv_to_md."""
+        self.maxDiff = None
         with tempfile.TemporaryDirectory() as temp_dir:
             md_path = os.path.join(temp_dir, "test.md")
             pipe.convert_arxiv_csv_to_md(

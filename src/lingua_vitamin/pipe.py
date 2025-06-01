@@ -244,6 +244,7 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
     ]
     toc = []
 
+    prev_date = None
     for i, row in df.iterrows():
         lines.append(f"## Article {i}\n")
 
@@ -257,6 +258,11 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
         short_date = "-".join(date.split("-")[1:])
         short_url = url.split("/")[-1]
 
+        week_day = datetime.datetime.strptime(date, "%Y-%m-%d").weekday() + 1
+        if short_date != prev_date:
+            prev_date = short_date
+            short_date = f"**{short_date} ({week_day})**"
+
         for lang in ("de", "zh"):
             col = f"{KEY_TITLE}-{lang}"
             title += " |"
@@ -269,7 +275,7 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
         )
 
         # Body
-        lines.append(f"### Title@{date}: {short_title}\n")
+        lines.append(f"### Title@{date} ({week_day}): {short_title}\n")
         lines.append(
             f"**Title**: {title} [{short_url}]({url})\n\n**Authors**: {authors}\n\n{abstract}\n\n"
         )

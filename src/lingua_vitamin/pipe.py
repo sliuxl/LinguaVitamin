@@ -287,7 +287,9 @@ def run_arxiv(args, md_path: str, csv_path: str, date_str: str):
         .replace("-", "")
     )
 
-    papers = arxiv_fetcher.fetch_arxiv_papers(subject=args.arxiv, date=date)
+    papers = arxiv_fetcher.fetch_arxiv_papers(
+        subject=args.arxiv, date=date, top_n=args.num_articles
+    )
     if not papers:
         logging.warning("No papers fetched, exiting.")
         return None

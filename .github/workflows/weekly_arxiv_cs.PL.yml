@@ -61,6 +61,7 @@ jobs:
             --arxiv cs.PL \
             --arxiv_num_days 8 \
             --github_repo sliuxl/LinguaVitaminArxiv \
+            --num_articles 3000 \
             --target_langs de zh\
             \
             --output_root /tmp/LinguaVitaminArxiv \

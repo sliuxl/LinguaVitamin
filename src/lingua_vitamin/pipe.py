@@ -211,7 +211,7 @@ def _translate_papers(df, column, target_langs, source_lang="en"):
             new_abs = [
                 (t or "")
                 for t in _translate_texts(
-                    trans, abstracts[:MAX_ARXIV_ABSTRACTS], batch=5
+                    trans, abstracts[:MAX_ARXIV_ABSTRACTS], batch=1
                 )
             ]
             if len(new_abs) < len(abstracts):
@@ -354,7 +354,7 @@ def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
                 (
                     f"### Title@{date} ({week_day}): {short_title}",
                     f"**Title**: {title} [{short_url}]({url})",
-                    f"**Authors**: {authors}",
+                    f"**Authors** ({len(authors.split(','))}): {authors}",
                     abstract,
                     "",
                 )

@@ -160,15 +160,17 @@ def _translate_papers(df, column, target_langs, source_lang="en"):
 
 def convert_news_csv_to_md(csv_path, md_path, date_str, source_lang, target_langs):
     """Convert news csv to md."""
+    df = pd.read_csv(csv_path)
+
     lines = [
         _TEMPLATE.replace(
-            "TITLE", f"{LANGUAGE_MAP.get(source_lang, '')} News for {date_str}"
+            "TITLE",
+            f"{LANGUAGE_MAP.get(source_lang, '')} News for {date_str}: {len(df):03d}",
         ).replace("DATE", date_str),
         "\n\n",
     ]
     toc = []
 
-    df = pd.read_csv(csv_path)
     for i, row in df.iterrows():
         lines.append(f"## Article {i}\n")
 
@@ -232,13 +234,16 @@ def run_news(args, md_path: str, csv_path: str, date_str: str):
 
 def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
     """Convert arxiv csv to md."""
+    df = pd.read_csv(csv_path)
+
     lines = [
-        _TEMPLATE.replace("TITLE", f"{subject} @ {date_str}").replace("DATE", date_str),
+        _TEMPLATE.replace("TITLE", f"{subject} @ {date_str}: {len(df):03d}").replace(
+            "DATE", date_str
+        ),
         "\n\n",
     ]
     toc = []
 
-    df = pd.read_csv(csv_path)
     for i, row in df.iterrows():
         lines.append(f"## Article {i}\n")
 

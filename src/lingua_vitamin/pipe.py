@@ -9,7 +9,8 @@ import subprocess
 import datetime
 import pandas as pd
 
-from lingua_vitamin.news import fetcher
+from lingua_vitamin.arxiv import fetcher as arxiv_fetcher
+from lingua_vitamin.news import fetcher as news_fetcher
 from lingua_vitamin.translate.translator import Translator
 
 
@@ -23,6 +24,17 @@ LANGUAGE_MAP = {
     "fr": "French",
     "zh": "Chinese",
 }
+
+_TEMPLATE = (
+    """
+---
+title: TITLE
+date: DATE
+layout: post
+---
+""".strip()
+    + "\n\n"
+)
 
 
 def _git_run(*args):
@@ -121,18 +133,12 @@ def _translate_news(articles, source_lang: str, target_langs):
     return translated_articles
 
 
-def convert_csv_to_md(csv_path, md_path, date_str, source_lang, target_langs):
-    """Convert csv to md."""
-    lines = f"""
----
-title: {LANGUAGE_MAP.get(source_lang, "")} News for {date_str}
-date: {date_str}
-layout: post
----
-    """.strip()
-
+def convert_news_csv_to_md(csv_path, md_path, date_str, source_lang, target_langs):
+    """Convert news csv to md."""
     lines = [
-        lines + "\n\n",
+        _TEMPLATE.replace(
+            "TITLE", f"{LANGUAGE_MAP.get(source_lang, '')} News for {date_str}"
+        ).replace("DATE", date_str),
         "\n\n",
     ]
     toc = []
@@ -169,7 +175,7 @@ layout: post
 
 def run_news(args, md_path: str, csv_path: str, date_str: str):
     """Run news."""
-    articles = fetcher.fetch_top_news_rss(
+    articles = news_fetcher.fetch_top_news_rss(
         lang=args.source_lang, top_n=args.num_articles
     )
     if not articles:
@@ -192,6 +198,69 @@ def run_news(args, md_path: str, csv_path: str, date_str: str):
     df.to_csv(csv_path)
     logging.info("Daily news written to `%s`.", csv_path)
 
-    convert_csv_to_md(csv_path, md_path, date_str, args.source_lang, args.target_langs)
+    convert_news_csv_to_md(
+        csv_path, md_path, date_str, args.source_lang, args.target_langs
+    )
+
+    return md_path, csv_path
+
+
+def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
+    """Convert arxiv csv to md."""
+    lines = [
+        _TEMPLATE.replace("TITLE", f"{subject} @ {date_str}").replace("DATE", date_str),
+        "\n\n",
+    ]
+    toc = []
+
+    df = pd.read_csv(csv_path)
+    for i, row in df.iterrows():
+        lines.append(f"## Article {i}\n")
+
+        title = row[arxiv_fetcher.KEY_TITLE]
+        abstract = row[arxiv_fetcher.KEY_ABSTRACT]
+        date = row[arxiv_fetcher.KEY_DATE][:10]
+        authors = row[arxiv_fetcher.KEY_AUTHORS]
+        url = row[arxiv_fetcher.KEY_URL]
+
+        lines.append(f"### Title@{date}: {title}\n")
+        lines.append(
+            f"**Title**: [{title}]({url})\n\n**Authors**: {authors}\n\n{abstract}\n\n"
+        )
+
+        summary = f"[{i:02d}](#article-{i}) | {date} | {title} | [{url}]({url})"
+        toc.append(summary)
+
+        lines.append("---\n\n")
+
+    lines = lines[:1] + ["\n".join(f"- {t}" for t in toc)] + lines[1:]
+    os.makedirs(os.path.dirname(md_path), exist_ok=True)
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write("".join(lines))
+
+    logging.info("arXiv papers (%s) written to `%s`.", subject, md_path)
+
+
+def run_arxiv(args, md_path: str, csv_path: str, date_str: str):
+    """Run arXiv."""
+    date = (
+        (datetime.date.today() - datetime.timedelta(days=args.arxiv_num_days))
+        .isoformat()
+        .replace("-", "")
+    )
+
+    papers = arxiv_fetcher.fetch_arxiv_papers(subject=args.arxiv, date=date)
+    if not papers:
+        logging.warning("No papers fetched, exiting.")
+        return None
+
+    df = pd.DataFrame(papers)
+    df = df[sorted(df.columns)]
+
+    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+    df.to_csv(csv_path)
+    logging.info("[%s] Papers from arXiv are written to `%s`.", args.arxiv, csv_path)
+
+    convert_arxiv_csv_to_md(csv_path, md_path, date_str, args.arxiv)
 
     return md_path, csv_path

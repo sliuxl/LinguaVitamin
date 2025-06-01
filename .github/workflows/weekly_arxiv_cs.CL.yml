@@ -2,7 +2,7 @@ name: Weekly LinguaVitamin arXiv (cs.CL) Run
 
 on:
   schedule:
-    - cron: "00 14 * * 5"       # Runs at 07:00 PDT on Fridays
+    - cron: "00  8 * * 5"       # Runs at 01:00 PDT on Fridays
   workflow_dispatch:            # Also allows manual triggering
 
 jobs:

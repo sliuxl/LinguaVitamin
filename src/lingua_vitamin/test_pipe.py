@@ -136,10 +136,10 @@ date: 2025-06-01
 layout: post
 ---
 
-- [00](#article-0) | 05-29 | From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | $GERMAN | $CHINESE_TRANSLATION | [2505.23710v1](http://arxiv.org/abs/2505.23710v1)
+- [00](#article-0) | **05-29 (4)** | From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | $GERMAN | $CHINESE_TRANSLATION | [2505.23710v1](http://arxiv.org/abs/2505.23710v1)
 
 ## Article 0
-### Title@2025-05-29: From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems
+### Title@2025-05-29 (4): From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems
 **Title**: From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | $GERMAN | $CHINESE_TRANSLATION [2505.23710v1](http://arxiv.org/abs/2505.23710v1)
 
 **Authors**: Zeinab Nezami, Syed Danial Ali Shah, Maryam Hafeez, Karim Djemame, Syed Ali Raza Zaidi
@@ -156,12 +156,12 @@ date: 2025-06-01
 layout: post
 ---
 
-- [00](#article-0) | 05-29 | Extensional and Non-extensional Functions as Processes | | | [2405.03536v2](http://arxiv.org/abs/2405.03536v2)
+- [00](#article-0) | **05-29 (4)** | Extensional and Non-extensional Functions as Processes | | | [2405.03536v2](http://arxiv.org/abs/2405.03536v2)
 - [01](#article-1) | 05-29 | Quantitative Verification with Neural Networks | | | [2301.06136v5](http://arxiv.org/abs/2301.06136v5)
-- [02](#article-2) | 05-29 | Is spreadsheet syntax better than numeric indexing for cell selection? | | | [2505.23296v1](http://arxiv.org/abs/2505.23296v1)
+- [02](#article-2) | **05-30 (5)** | Is spreadsheet syntax better than numeric indexing for cell selection? | | | [2505.23296v1](http://arxiv.org/abs/2505.23296v1)
 
 ## Article 0
-### Title@2025-05-29: Extensional and Non-extensional Functions as Processes
+### Title@2025-05-29 (4): Extensional and Non-extensional Functions as Processes
 **Title**: Extensional and Non-extensional Functions as Processes | | [2405.03536v2](http://arxiv.org/abs/2405.03536v2)
 
 **Authors**: Ken Sakayori, Davide Sangiorgi
@@ -171,7 +171,7 @@ Following Milner's seminal paper, the representation of functions as processes h
 ---
 
 ## Article 1
-### Title@2025-05-29: Quantitative Verification with Neural Networks
+### Title@2025-05-29 (4): Quantitative Verification with Neural Networks
 **Title**: Quantitative Verification with Neural Networks | | [2301.06136v5](http://arxiv.org/abs/2301.06136v5)
 
 **Authors**: Alessandro Abate, Alec Edwards, Mirco Giacobbe, Hashan Punchihewa, Diptarko Roy
@@ -181,7 +181,7 @@ We present a data-driven approach to the quantitative verification of probabilis
 ---
 
 ## Article 2
-### Title@2025-05-29: Is spreadsheet syntax better than numeric indexing for cell selection?
+### Title@2025-05-30 (5): Is spreadsheet syntax better than numeric indexing for cell selection?
 **Title**: Is spreadsheet syntax better than numeric indexing for cell selection? | | [2505.23296v1](http://arxiv.org/abs/2505.23296v1)
 
 **Authors**: Philip Heltweg, Dirk Riehle, Georg-Daniel Schwarz

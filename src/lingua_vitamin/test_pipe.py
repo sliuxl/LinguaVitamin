@@ -129,7 +129,70 @@ Los Angeles Dodgers star shortstop Mookie Betts soll sich den Zeh gebrochen habe
 """.strip()
 
 
-class TestFetcher(unittest.TestCase):
+_MD_CONTENT_ARXIV_DC = """
+---
+title: cs.DC @ 2025-06-01
+date: 2025-06-01
+layout: post
+---
+
+- [00](#article-0) | 2025-05-29 | From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems | [http://arxiv.org/abs/2505.23710v1](http://arxiv.org/abs/2505.23710v1)
+
+## Article 0
+### Title@2025-05-29: From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems
+**Title**: [From Connectivity to Autonomy: The Dawn of Self-Evolving Communication   Systems](http://arxiv.org/abs/2505.23710v1)
+
+**Authors**: Zeinab Nezami, Syed Danial Ali Shah, Maryam Hafeez, Karim Djemame, Syed Ali Raza Zaidi
+
+This paper envisions 6G as a self-evolving telecom ecosystem, where AI-driven intelligence enables dynamic adaptation beyond static connectivity. We explore the key enablers of autonomous communication systems, spanning reconfigurable infrastructure, adaptive middleware, and intelligent network functions, alongside multi-agent collaboration for distributed decision-making. We explore how these methodologies align with emerging industrial IoT frameworks, ensuring seamless integration within digital manufacturing processes. Our findings emphasize the potential for improved real-time decision-making, optimizing efficiency, and reducing latency in networked control systems. The discussion addresses ethical challenges, research directions, and standardization efforts, concluding with a technology stack roadmap to guide future developments. By leveraging state-of-the-art 6G network management techniques, this research contributes to the next generation of intelligent automation solutions, bridging the gap between theoretical advancements and real-world industrial applications.
+
+---
+""".strip()
+
+_MD_CONTENT_ARXIV_PL = r"""
+---
+title: cs.PL @ 2025-06-01
+date: 2025-06-01
+layout: post
+---
+
+- [00](#article-0) | 2025-05-29 | Extensional and Non-extensional Functions as Processes | [http://arxiv.org/abs/2405.03536v2](http://arxiv.org/abs/2405.03536v2)
+- [01](#article-1) | 2025-05-29 | Quantitative Verification with Neural Networks | [http://arxiv.org/abs/2301.06136v5](http://arxiv.org/abs/2301.06136v5)
+- [02](#article-2) | 2025-05-29 | Is spreadsheet syntax better than numeric indexing for cell selection? | [http://arxiv.org/abs/2505.23296v1](http://arxiv.org/abs/2505.23296v1)
+
+## Article 0
+### Title@2025-05-29: Extensional and Non-extensional Functions as Processes
+**Title**: [Extensional and Non-extensional Functions as Processes](http://arxiv.org/abs/2405.03536v2)
+
+**Authors**: Ken Sakayori, Davide Sangiorgi
+
+Following Milner's seminal paper, the representation of functions as processes has received considerable attention. For pure $\lambda$-calculus, the process representations yield (at best) non-extensional $\lambda $-theories (i.e., $\beta$ rule holds, whereas $\eta$ does not).   In the paper, we study how to obtain extensional representations, and how to move between extensional and non-extensional representations. Using Internal $\pi$, $\mathrm{I}\pi$ (a subset of the $\pi$-calculus in which all outputs are bound), we develop a refinement of Milner's original encoding of functions as processes that is parametric on certain abstract components called wires. These are, intuitively, processes whose task is to connect two end-point channels. We show that when a few algebraic properties of wires hold, the encoding yields a $\lambda$-theory. Exploiting the symmetries and dualities of $\mathrm{I}\pi$, we isolate three main classes of wires. The first two have a sequential behaviour and are dual of each other; the third has a parallel behaviour and is the dual of itself. We show the adoption of the parallel wires yields an extensional $\lambda$-theory; in fact, it yields an equality that coincides with that of B\"ohm trees with infinite $\eta$. In contrast, the other two classes of wires yield non-extensional $\lambda$-theories whose equalities are those of the L\'evy-Longo and B\"ohm trees.
+
+---
+
+## Article 1
+### Title@2025-05-29: Quantitative Verification with Neural Networks
+**Title**: [Quantitative Verification with Neural Networks](http://arxiv.org/abs/2301.06136v5)
+
+**Authors**: Alessandro Abate, Alec Edwards, Mirco Giacobbe, Hashan Punchihewa, Diptarko Roy
+
+We present a data-driven approach to the quantitative verification of probabilistic programs and stochastic dynamical models. Our approach leverages neural networks to compute tight and sound bounds for the probability that a stochastic process hits a target condition within finite time. This problem subsumes a variety of quantitative verification questions, from the reachability and safety analysis of discrete-time stochastic dynamical models, to the study of assertion-violation and termination analysis of probabilistic programs. We rely on neural networks to represent supermartingale certificates that yield such probability bounds, which we compute using a counterexample-guided inductive synthesis loop: we train the neural certificate while tightening the probability bound over samples of the state space using stochastic optimisation, and then we formally check the certificate's validity over every possible state using satisfiability modulo theories; if we receive a counterexample, we add it to our set of samples and repeat the loop until validity is confirmed. We demonstrate on a diverse set of benchmarks that, thanks to the expressive power of neural networks, our method yields smaller or comparable probability bounds than existing symbolic methods in all cases, and that our approach succeeds on models that are entirely beyond the reach of such alternative techniques.
+
+---
+
+## Article 2
+### Title@2025-05-29: Is spreadsheet syntax better than numeric indexing for cell selection?
+**Title**: [Is spreadsheet syntax better than numeric indexing for cell selection?](http://arxiv.org/abs/2505.23296v1)
+
+**Authors**: Philip Heltweg, Dirk Riehle, Georg-Daniel Schwarz
+
+Selecting a subset of cells is a common task in data engineering, for example, to remove errors or select only specific parts of a table. Multiple approaches to express this selection exist. One option is numeric indexing, commonly found in general programming languages, where a tuple of numbers identifies the cell. Alternatively, the separate dimensions can be referred to using different enumeration schemes like "A1" for the first cell, commonly found in software such as spreadsheet systems.   In a large-scale controlled experiment with student participants as proxy for data practitioners, we compare the two options with respect to speed and correctness of reading and writing code.   The results show that, when reading code, participants make less mistakes using spreadsheet-style syntax. Additionally, when writing code, they make fewer mistakes and are faster when using spreadsheet syntax compared to numeric syntax.   From this, a domain-specific syntax, such as spreadsheet syntax for data engineering, appears to be a promising alternative to explore in future tools to support practitioners without a software engineering background.
+
+---
+""".strip()
+
+
+class TestPipe(unittest.TestCase):
     """Unit tests for pipe.py."""
 
     @parameterized.expand(
@@ -138,18 +201,38 @@ class TestFetcher(unittest.TestCase):
             ("en", ("de", "zh"), "testdata/news-en.csv", _MD_CONTENT_EN),
         )
     )
-    def test_convert_csv_to_md(
+    def test_convert_news_csv_to_md(
         self, source_lang, target_langs, csv_path, expected_content
     ):
-        """Unit test for convert_csv_to_md."""
+        """Unit test for convert_news_csv_to_md."""
         with tempfile.TemporaryDirectory() as temp_dir:
             md_path = os.path.join(temp_dir, "test.md")
-            pipe.convert_csv_to_md(
+            pipe.convert_news_csv_to_md(
                 os.path.join(_PWD, csv_path),
                 md_path,
                 _DATE,
                 source_lang,
                 target_langs,
+            )
+
+            self.assertTrue(os.path.exists(md_path))
+            self.assertEqual(utils.load_file(md_path).strip(), expected_content)
+
+    @parameterized.expand(
+        (
+            ("cs.DC", "testdata/arxiv-cs__DC.csv", _MD_CONTENT_ARXIV_DC),
+            ("cs.PL", "testdata/arxiv-cs__PL.csv", _MD_CONTENT_ARXIV_PL),
+        )
+    )
+    def test_convert_arxiv_csv_to_md(self, subject, csv_path, expected_content):
+        """Unit test for convert_arxiv_csv_to_md."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            md_path = os.path.join(temp_dir, "test.md")
+            pipe.convert_arxiv_csv_to_md(
+                os.path.join(_PWD, csv_path),
+                md_path,
+                _DATE,
+                subject,
             )
 
             self.assertTrue(os.path.exists(md_path))

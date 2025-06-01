@@ -108,7 +108,7 @@ def main():
     category = args.output_md.split("/")[1]
     is_arxiv = bool(args.arxiv)
     if is_arxiv:
-        tag = args.arxiv.lower().replace(".", "__")
+        tag = args.arxiv.replace(".", "__")
         pipe_func = pipe.run_arxiv
     else:
         tag = args.source_lang

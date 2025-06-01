@@ -10,11 +10,10 @@
 
 Checkout related repositories below for artifacts:
 
-| Index | Category | Translation               | Github Repo                                                        | Github Pages                                | Update Frequency |
-|-------|----------|---------------------------|--------------------------------------------------------------------|---------------------------------------------|------------------|
-| 1     | News     | `de` → `{en, zh}`         | [LinguaVitaminNews](https://github.com/sliuxl/LinguaVitaminNews)   | https://sliuxl.github.io/LinguaVitaminNews  | **Daily**        |
-|       |          | `en` → `{de, es, fr, zh}` |                                                                    |                                             |                  |
-| 2     | arXiv    | `en` → `{de, zh}`         | [LinguaVitaminArxiv](https://github.com/sliuxl/LinguaVitaminArxiv) | https://sliuxl.github.io/LinguaVitaminArxiv | Weekly           |
+| Index | Category | Translation                                    | Github Repo                                                        | Github Pages                                | Update Frequency |
+|-------|----------|------------------------------------------------|--------------------------------------------------------------------|---------------------------------------------|------------------|
+| 1     | News     | `de` → `{en, zh}`<br>`en` → `{de, es, fr, zh}` | [LinguaVitaminNews](https://github.com/sliuxl/LinguaVitaminNews)   | https://sliuxl.github.io/LinguaVitaminNews  | **Daily**        |
+| 2     | arXiv    | `en` → `{de, zh}`                              | [LinguaVitaminArxiv](https://github.com/sliuxl/LinguaVitaminArxiv) | https://sliuxl.github.io/LinguaVitaminArxiv | Weekly           |
 
 
 

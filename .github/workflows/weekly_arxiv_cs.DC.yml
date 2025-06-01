@@ -59,8 +59,9 @@ jobs:
             --to_emails         $TO_EMAILS \
             \
             --arxiv cs.DC \
-            --arxiv_num_days 7 \
+            --arxiv_num_days 8 \
             --github_repo sliuxl/LinguaVitaminArxiv \
+            --target_langs de zh\
             \
             --output_root /tmp/LinguaVitaminArxiv \
             --output_md  _posts/arxiv/{year}/{month} \

@@ -26,6 +26,18 @@ def parse_args():
         "--source_lang", type=str, default="de", help="Source language code (e.g. de)"
     )
     parser.add_argument(
+        "--arxiv",
+        type=str,
+        default="",
+        help="Arxiv subject to look at, e.g. cs.DC, cs.PL, etc.",
+    )
+    parser.add_argument(
+        "--arxiv_num_days",
+        type=int,
+        default=1,
+        help="Arxiv history to look at, one day, one week, etc.",
+    )
+    parser.add_argument(
         "--target_langs",
         nargs="+",
         default=["en", "es", "zh", "fr"],
@@ -94,15 +106,22 @@ def main():
         )
 
     category = args.output_md.split("/")[1]
+    is_arxiv = bool(args.arxiv)
+    if is_arxiv:
+        tag = args.arxiv.lower().replace(".", "__")
+        pipe_func = pipe.run_arxiv
+    else:
+        tag = args.source_lang
+        pipe_func = pipe.run_news
     date_str, branch_name, md_path, csv_path = pipe.get_filenames(
-        args, tag=f"{category}-{args.source_lang}"
+        args, tag=f"{category}-{tag}"
     )
 
-    if pipe.run_news(args, md_path, csv_path, date_str) is None:
+    if pipe_func(args, md_path, csv_path, date_str) is None:
         logging.warning("Nothing to process: Early stop.")
         return
 
-    pr_title = email_subject = f"LinguaVitamin daily news: {branch_name}"
+    pr_title = email_subject = f"LinguaVitamin daily {category}: {branch_name}"
     pr_url = None
     if github_token and args.github_repo:
         try:
@@ -110,7 +129,7 @@ def main():
                 args.output_root, branch_name, (md_path, csv_path), args.base_branch
             )
 
-            pr_body = f"Auto-generated daily news translations for {date_str}."
+            pr_body = f"Auto-generated daily {category} for {date_str}."
 
             pr_url = utils.create_github_pr(
                 args.github_repo,
@@ -129,9 +148,7 @@ def main():
         else:
             print("Failed to create PR.")
 
-    email_body = (
-        f"Daily news has been pushed and PR created: {pr_url if pr_url else 'N/A'}"
-    )
+    email_body = f"Daily {category} has been pushed and PR created: {pr_url if pr_url else 'N/A'}"
     utils.send_email(
         email_subject,
         email_body,

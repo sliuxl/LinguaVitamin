@@ -62,8 +62,8 @@ def create_branch_and_push(root_dir, branch_name, file_path, base_branch):
         base_branch,
         file_path,
     )
-    # _git_run("checkout", base_branch)
-    # _git_run("pull", "origin", base_branch)
+    _git_run("checkout", base_branch)
+    _git_run("pull", "origin", base_branch)
 
     _git_run("checkout", "-b", branch_name)
     if isinstance(file_path, str):

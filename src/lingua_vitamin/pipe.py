@@ -130,7 +130,9 @@ def _translate_texts(trans, texts, batch: int = 1):
     )
 
     if batch == 1:
-        for text in texts:
+        for index, text in enumerate(texts):
+            if index and not index % 50:
+                logging.info("   [%d/ %d] ...", index, len(texts))
             results.append(_translate_text(trans, text))
         return results
 

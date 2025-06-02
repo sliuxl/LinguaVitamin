@@ -65,8 +65,9 @@ LinguaVitaminNews
   * For news titles and content
     - German → English & Chinese
     - English → German & Chinese
-  * For arXiv paper titles only (~~abstract~~)
-    - English → German & Chinese
+  * For arXiv papers
+    - English → German & Chinese: Titles
+    - English → Chinese: Up to `300` abstracts
 - Saves output into both Markdown and CSV formats
 
 
@@ -80,10 +81,11 @@ You can:
 
 ## 6. 🔍 Limitations
 
-- Current LLMs are likely not the SOTA for translation, and they do make mistakes
-- Current LLMs support limited sequence length up to `512` *only*, therefore we
+- Used LLM is unlikely to be the SOTA for translation, and it does make mistakes
+- Used LLM supports limited sequence length up to `512` *only*, therefore we
   * **Drop** news with too long title or content
   * *Skip* arXiv paper translation with too long titles
+- Batch mode seems to be not-optimized for HF LLMs, as we don't see obvious speedup
 
 
 ## 7. 🧑💻 Author

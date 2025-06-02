@@ -8,6 +8,8 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    env:
+      TZ: America/Los_Angeles
 
     steps:
       - name: Checkout repository

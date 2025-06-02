@@ -22,9 +22,9 @@ date: 2025-06-01
 layout: post
 ---
 
-- [[00] Merz trifft am Donnerstag Trump im Weißen Haus | Merz meets Trump at the White House on Thursday | 梅兹星期四在白宫见特朗普](#article-0)
-- [[01] News kompakt: Merz spricht Einladung an Trump aus | News compact: Merz gives invitation to Trump | 新闻报道: Merz正在向特朗普发出邀请](#article-1)
-- [[02] Die außenpolitischen Baustellen des Friedrich Merz | The foreign-policy construction sites of Friedrich Merz | Friedrich Merz的外交政策工程](#article-2)
+- [[00] Merz trifft am Donnerstag Trump im Weißen Haus](#article-0) | Merz meets Trump at the White House on Thursday | 梅兹星期四在白宫见特朗普
+- [[01] News kompakt: Merz spricht Einladung an Trump aus](#article-1) | News compact: Merz gives invitation to Trump | 新闻报道: Merz正在向特朗普发出邀请
+- [[02] Die außenpolitischen Baustellen des Friedrich Merz](#article-2) | The foreign-policy construction sites of Friedrich Merz | Friedrich Merz的外交政策工程
 
 ## Article 0
 ### Original (de):
@@ -88,8 +88,8 @@ date: 2025-06-01
 layout: post
 ---
 
-- [[00] Elizabeth Hurley's debut with Billy Ray Cyrus, Jennifer Lopez’s daring dress mark week of red carpet moments | Elizabeth Hurley's Debüt mit Billy Ray Cyrus, Jennifer Lopez's wagemutige Kleid Mark Woche roter Teppich Momente | 伊丽莎白·赫里与比利·雷·雷·赛勒斯的首演,珍妮弗·洛佩斯的大胆裙子标志红地毯时刻一周](#article-0)
-- [[01] Dodgers star Mookie Betts sustains freak toe injury while walking to bathroom | Dodgers Star Mookie Betts hält Freak Zee Verletzung beim Gehen zum Bad | 道奇明星明星Mookie Betts在步行上厕所时 一直保持脚趾畸形受伤状态](#article-1)
+- [[00] Elizabeth Hurley's debut with Billy Ray Cyrus, Jennifer Lopez’s daring dress mark week of red carpet moments](#article-0) | Elizabeth Hurley's Debüt mit Billy Ray Cyrus, Jennifer Lopez's wagemutige Kleid Mark Woche roter Teppich Momente | 伊丽莎白·赫里与比利·雷·雷·赛勒斯的首演,珍妮弗·洛佩斯的大胆裙子标志红地毯时刻一周
+- [[01] Dodgers star Mookie Betts sustains freak toe injury while walking to bathroom](#article-1) | Dodgers Star Mookie Betts hält Freak Zee Verletzung beim Gehen zum Bad | 道奇明星明星Mookie Betts在步行上厕所时 一直保持脚趾畸形受伤状态
 
 ## Article 0
 ### Original (en):
@@ -209,7 +209,7 @@ class TestPipe(unittest.TestCase):
             ("en", ("de", "zh"), "testdata/news-en.csv", _MD_CONTENT_EN),
         )
     )
-    def _test_convert_news_csv_to_md(
+    def test_convert_news_csv_to_md(
         self, source_lang, target_langs, csv_path, expected_content
     ):
         """Unit test for convert_news_csv_to_md."""

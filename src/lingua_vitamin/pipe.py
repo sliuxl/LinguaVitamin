@@ -251,10 +251,10 @@ def convert_news_csv_to_md(csv_path, md_path, date_str, source_lang, target_lang
         lines.append(f"**Title:** {title}\n\n{content}\n\n")
 
         summary = title
+        summary = f"[[{i:02d}] {title}](#article-{i})"
         for target in ("de", "en", "zh"):
             if target in target_langs:
                 summary += " | " + row[f"title-{target}"]
-        summary = f"[[{i:02d}] {summary}](#article-{i})"
         toc.append(summary)
 
         for target in target_langs:

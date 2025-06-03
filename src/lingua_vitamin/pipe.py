@@ -1,6 +1,7 @@
 """Util functions for the pipeline."""
 
 from collections import defaultdict
+import glob
 import logging
 import os
 import sys
@@ -272,6 +273,65 @@ def convert_news_csv_to_md(csv_path, md_path, date_str, source_lang, target_lang
     logging.info("Daily news written to `%s`.", md_path)
 
 
+def run_vocab(rows, source_lang: str, target_langs, csv_path, md_path, date_str):
+    """Run vocab."""
+    rows = list(rows)
+    for s in r'".,:?!_#@<>/|()[]=+*^%$~`0123456789\\':
+        rows = [r.replace(s, " ") for r in rows]
+
+    counts = defaultdict(lambda: defaultdict(int))
+    for row in rows:
+        words = row.split()
+        for word in words:
+            counts[word.lower()][word] += 1
+
+    df = []
+    for key, d_count in counts.items():
+        max_key = max(d_count, key=d_count.get)
+        df.append((key, max_key, sum(d_count.values())))
+    c_lower, c_word, c_count = "lower", f"word-{source_lang}", "count"
+    df = pd.DataFrame(df, columns=[c_lower, c_word, c_count])
+    df = df.sort_values([c_count, c_lower], ascending=[False, True]).reset_index(
+        drop=True
+    )
+
+    df = df[[c_word, c_count]]
+    for target in target_langs:
+        trans = Translator(source_lang, target)
+        df[f"word-{target}"] = [
+            (t or "") for t in _translate_texts(trans, df[c_word], batch=5000)
+        ]
+
+    df.to_csv(csv_path)
+
+    # md
+    lines = [
+        _TEMPLATE.replace(
+            "TITLE",
+            f"{LANGUAGE_MAP.get(source_lang, '')} vocab up to {date_str}: {len(df):03d}",
+        ).replace("DATE", date_str),
+        f"- id | {c_count} | {' | '.join([source_lang] + list(target_langs))}\n",
+    ]
+
+    toc = []
+    logging.info(df.head())
+    for i, row in df.iterrows():
+        word = row[c_word]
+        count = row[c_count]
+        summary = f"[{i:04d}] | {count} | {word}"
+        for target in ("de", "en", "zh"):
+            if target in target_langs:
+                summary += " | " + row[f"word-{target}"]
+        toc.append(summary)
+
+    lines += ["\n".join(f"- {t}" for t in toc)]
+    os.makedirs(os.path.dirname(md_path), exist_ok=True)
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write("".join(lines))
+
+    return df
+
+
 def run_news(args, md_path: str, csv_path: str, date_str: str):
     """Run news."""
     articles = news_fetcher.fetch_top_news_rss(
@@ -301,7 +361,48 @@ def run_news(args, md_path: str, csv_path: str, date_str: str):
         csv_path, md_path, date_str, args.source_lang, args.target_langs
     )
 
-    return md_path, csv_path
+    # Vocab files
+    files = [md_path, csv_path]
+    try:
+        csv_paths = csv_path.replace(date_str, "*")
+        dfs = glob.glob(csv_paths)
+        dfs = [f for f in dfs if "-VOCAB" not in f]
+        logging.info("Reading from %d files: `%s` ...", len(dfs), dfs)
+        dfs = [pd.read_csv(f) for f in dfs]
+        df = pd.concat(dfs)
+
+        date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        # Next month's first day
+        if date.month == 12:
+            date = datetime.date(date.year + 1, 1, 1)
+        else:
+            date = datetime.date(date.year, date.month + 1, 1)
+        date -= datetime.timedelta(days=1)
+        last_date_in_month = f"{date.year:04d}-{date.month:02d}-{date.day:02d}"
+
+        def _get_file(md_path):
+            return os.path.join(
+                os.path.dirname(md_path),
+                f"{last_date_in_month}-VOCAB{os.path.basename(md_path).replace(date_str, '')}",
+            )
+
+        csv2, md2 = _get_file(csv_path), _get_file(md_path)
+
+        run_vocab(
+            df[f"{KEY_TITLE}-{args.source_lang}"],
+            args.source_lang,
+            args.target_langs,
+            csv2,
+            md2,
+            last_date_in_month,
+        )
+    except Exception as error:
+        files = [md_path, csv_path]
+        logging.exception(
+            "Unable to export vocab file from (%s): <<<%s>>>", csv_path, error
+        )
+
+    return files
 
 
 def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):

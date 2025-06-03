@@ -329,7 +329,7 @@ def run_vocab(rows, source_lang: str, target_langs, csv_path, md_path, date_str)
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("".join(lines))
 
-    return df
+    return (csv_path, md_path)
 
 
 def run_news(args, md_path: str, csv_path: str, date_str: str):
@@ -388,13 +388,15 @@ def run_news(args, md_path: str, csv_path: str, date_str: str):
 
         csv2, md2 = _get_file(csv_path), _get_file(md_path)
 
-        run_vocab(
-            df[f"{KEY_TITLE}-{args.source_lang}"],
-            args.source_lang,
-            args.target_langs,
-            csv2,
-            md2,
-            last_date_in_month,
+        files += list(
+            run_vocab(
+                df[f"{KEY_TITLE}-{args.source_lang}"],
+                args.source_lang,
+                args.target_langs,
+                csv2,
+                md2,
+                last_date_in_month,
+            )
         )
     except Exception as error:
         files = [md_path, csv_path]
@@ -402,7 +404,7 @@ def run_news(args, md_path: str, csv_path: str, date_str: str):
             "Unable to export vocab file from (%s): <<<%s>>>", csv_path, error
         )
 
-    return files
+    return tuple(files)
 
 
 def convert_arxiv_csv_to_md(csv_path, md_path, date_str, subject):
@@ -501,7 +503,7 @@ def run_arxiv(args, md_path: str, csv_path: str, date_str: str):
 
     convert_arxiv_csv_to_md(csv_path, md_path, date_str, args.arxiv)
 
-    return md_path, csv_path
+    return (md_path, csv_path)
 
 
 def main():

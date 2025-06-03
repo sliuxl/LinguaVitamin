@@ -117,7 +117,8 @@ def main():
         args, tag=f"{category}-{tag}"
     )
 
-    if pipe_func(args, md_path, csv_path, date_str) is None:
+    files = pipe_func(args, md_path, csv_path, date_str)
+    if files is None:
         logging.warning("Nothing to process: Early stop.")
         return
 
@@ -126,7 +127,7 @@ def main():
     if github_token and args.github_repo:
         try:
             pipe.create_branch_and_push(
-                args.output_root, branch_name, (md_path, csv_path), args.base_branch
+                args.output_root, branch_name, files, args.base_branch
             )
 
             pr_body = f"Auto-generated daily {category} for {date_str}."

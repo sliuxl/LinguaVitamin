@@ -276,32 +276,38 @@ def convert_news_csv_to_md(csv_path, md_path, date_str, source_lang, target_lang
 def run_vocab(rows, source_lang: str, target_langs, csv_path, md_path, date_str):
     """Run vocab."""
     rows = list(rows)
-    for s in r'".,:?!_#@<>/|()[]=+*^%$~`0123456789\\':
-        rows = [r.replace(s, " ") for r in rows]
 
     counts = defaultdict(lambda: defaultdict(int))
-    for row in rows:
+    examples = {}
+    for input_row in rows:
+        row = input_row
+        for s in r'".,:?!_#@<>/|()[]=+*^%$~`0123456789\\':
+            row = row.replace(s, " ")
         words = row.split()
         for word in words:
             counts[word.lower()][word] += 1
+            # Example sentence/ title for the given word
+            if word not in examples:
+                examples[word] = input_row
 
     df = []
     for key, d_count in counts.items():
         max_key = max(d_count, key=d_count.get)
-        df.append((key, max_key, sum(d_count.values())))
-    c_lower, c_word, c_count = "lower", f"word-{source_lang}", "count"
-    df = pd.DataFrame(df, columns=[c_lower, c_word, c_count])
+        df.append((key, max_key, sum(d_count.values()), examples[max_key]))
+    c_lower, c_word, c_count, c_ex = "lower", f"word-{source_lang}", "count", "example"
+    df = pd.DataFrame(df, columns=[c_lower, c_word, c_count, c_ex])
     df = df.sort_values([c_count, c_lower], ascending=[False, True]).reset_index(
         drop=True
     )
 
-    df = df[[c_word, c_count]]
+    df = df[[c_word, c_count, c_ex]]
     for target in target_langs:
         trans = Translator(source_lang, target)
         df[f"word-{target}"] = [
             (t or "") for t in _translate_texts(trans, df[c_word], batch=5000)
         ]
 
+    df = df[sorted(df.columns)]
     df.to_csv(csv_path)
 
     # md
@@ -310,18 +316,17 @@ def run_vocab(rows, source_lang: str, target_langs, csv_path, md_path, date_str)
             "TITLE",
             f"{LANGUAGE_MAP.get(source_lang, '')} vocab up to {date_str}: {len(df):03d}",
         ).replace("DATE", date_str),
-        f"- id | {c_count} | {' | '.join([source_lang] + list(target_langs))}\n",
+        f"- id | {c_count} | {' | '.join([source_lang] + list(target_langs))} | {c_ex}\n",
     ]
 
     toc = []
     logging.info(df.head())
     for i, row in df.iterrows():
-        word = row[c_word]
-        count = row[c_count]
-        summary = f"[{i:04d}] | {count} | {word}"
+        summary = f"[{i:04d}] | {row[c_count]} | {row[c_word]}"
         for target in ("de", "en", "zh"):
             if target in target_langs:
                 summary += " | " + row[f"word-{target}"]
+        summary += f" | {row[c_ex]}"
         toc.append(summary)
 
     lines += ["\n".join(f"- {t}" for t in toc)]

@@ -5,6 +5,7 @@ import os
 import tempfile
 import unittest
 
+import pandas as pd
 from parameterized import parameterized
 
 from lingua_vitamin import pipe
@@ -79,6 +80,35 @@ The future federal government is likely to have a lot of financial room for mano
 未来的联邦政府可能有很多财政空间,因为有贷款支持的特许权. 但是,他们正面临巨大的外交政策挑战,几乎所有人都与唐纳德·特朗普有关.
 
 ---
+""".strip()
+
+_MD_CONTENT_DE_VOCAB = """
+---
+title: "German vocab up to 2025-06-01: 019"
+date: 2025-06-01
+layout: post
+---
+
+- id | count | de | en | zh
+- [0000] | 3 | Merz | Merz | 梅爾茲
+- [0001] | 2 | Trump | Trump | 特朗普 特朗普
+- [0002] | 1 | am | Date | 是... ...
+- [0003] | 1 | an | to | 印在... ...
+- [0004] | 1 | aus | from | . . . .
+- [0005] | 1 | außenpolitischen | External relations | 外交政策
+- [0006] | 1 | Baustellen | Construction sites | 建筑工地
+- [0007] | 1 | des | of the | - ... ...
+- [0008] | 1 | Die | The | ...他们... ...
+- [0009] | 1 | Donnerstag | Thursday | 星期四
+- [0010] | 1 | Einladung | Invitation | 邀请函
+- [0011] | 1 | Friedrich | Frederick | 弗里德里希
+- [0012] | 1 | Haus | House | 房子
+- [0013] | 1 | im | In the | . . .
+- [0014] | 1 | kompakt | Compact | 交易完成
+- [0015] | 1 | News | News | 新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻,新闻
+- [0016] | 1 | spricht | speech | 说话啊
+- [0017] | 1 | trifft | meets | 打中了
+- [0018] | 1 | Weißen | White | 白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人,白人
 """.strip()
 
 _MD_CONTENT_EN = """
@@ -204,6 +234,28 @@ class TestPipe(unittest.TestCase):
     """Unit tests for pipe.py."""
 
     @parameterized.expand(
+        (("de", ("en", "zh"), "testdata/news-de.csv", _MD_CONTENT_DE_VOCAB),)
+    )
+    def test_run_vocab(self, source_lang, target_langs, i_csv_path, expected_content):
+        """Unit test for run_vocab."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = os.path.join(temp_dir, "test.csv")
+            md_path = os.path.join(temp_dir, "test.md")
+            df = pd.read_csv(os.path.join(_PWD, i_csv_path))
+            pipe.run_vocab(
+                df[f"title-{source_lang}"],
+                source_lang,
+                target_langs,
+                csv_path,
+                md_path,
+                "2025-06-01",
+            )
+
+            logging.debug("File `%s`: <<<%s>>>", md_path, utils.load_file(md_path))
+            logging.debug("File `%s`: <<<%s>>>", csv_path, utils.load_file(csv_path))
+            self.assertEqual(utils.load_file(md_path).strip(), expected_content)
+
+    @parameterized.expand(
         (
             ("de", ("en", "zh"), "testdata/news-de.csv", _MD_CONTENT_DE),
             ("en", ("de", "zh"), "testdata/news-en.csv", _MD_CONTENT_EN),
@@ -234,7 +286,6 @@ class TestPipe(unittest.TestCase):
     )
     def test_convert_arxiv_csv_to_md(self, subject, csv_path, expected_content):
         """Unit test for convert_arxiv_csv_to_md."""
-        self.maxDiff = None
         with tempfile.TemporaryDirectory() as temp_dir:
             md_path = os.path.join(temp_dir, "test.md")
             pipe.convert_arxiv_csv_to_md(

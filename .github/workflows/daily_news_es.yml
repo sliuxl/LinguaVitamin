@@ -1,0 +1,79 @@
+name: Daily LinguaVitamin News (en) Run
+
+on:
+  schedule:
+    - cron: "30 15 * * *"       # Runs daily at 08:30 PDT
+  workflow_dispatch:            # Also allows manual triggering
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/Los_Angeles
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set Git identity
+        run: |
+          git config --global user.email "bot@users.noreply.github.com"
+          git config --global user.name "LinguaVitamin Bot"
+
+      - name: Authenticate with GitHub
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/sliuxl/LinguaVitaminNews.git
+
+      - name: Clone LinguaVitaminNews
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminNews.git /tmp/LinguaVitaminNews
+          cd /tmp/LinguaVitaminNews
+          TODAY=$(date +%Y-%m-%d)
+          git push origin --delete AUTO--$TODAY--news-en || true
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -e .
+
+      - name: Run main script
+        env:
+          GITHUB_TOKEN:         ${{ secrets.GH_TOKEN }}
+          SMTP_SERVER:          ${{ secrets.SMTP_SERVER }}
+          SMTP_USER:            ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD:        ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL:           ${{ secrets.FROM_EMAIL }}
+          TO_EMAILS:            ${{ secrets.TO_EMAILS }}
+          NUM_ARTICLES:         ${{ secrets.NUM_ARTICLES }}
+        run: |
+          python src/lingua_vitamin/main.py \
+            --github_token      $GITHUB_TOKEN \
+            --smtp_server       "$SMTP_SERVER" \
+            --smtp_user         "$SMTP_USER" \
+            --smtp_password     "$SMTP_PASSWORD" \
+            --from_email        "$FROM_EMAIL" \
+            --to_emails         $TO_EMAILS \
+            --num_articles      $NUM_ARTICLES \
+            \
+            --source_lang en \
+            --target_langs de es fr zh \
+            --github_repo sliuxl/LinguaVitaminNews \
+            \
+            --output_root /tmp/LinguaVitaminNews \
+            --output_md  _posts/news/{year}/{month} \
+            --output_csv csv/news/{year}/{month}
+
+      - name: Merge PR for LinguaVitaminNews
+        run: |
+          cd /tmp/LinguaVitaminNews
+          TODAY=$(date +%Y-%m-%d)
+          BRANCH=AUTO--$TODAY--news-en
+          git push origin $BRANCH:main
+          git push origin --delete $BRANCH || true

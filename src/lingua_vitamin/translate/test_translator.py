@@ -21,6 +21,12 @@ TEXTS_EN = (
     "Paris is beautiful.",
 )
 
+TEXTS_ES = (
+    "Las acciones y el dólar se desploman por el relanzamiento de la guerra comercial por parte de Trump",
+    "Nike sube precios y regresa a Amazon",
+    "Bitcoin alcanza un nuevo máximo histórico",
+)
+
 
 class TestTranslator(unittest.TestCase):
     """Unit tests for translator.py."""
@@ -35,6 +41,11 @@ class TestTranslator(unittest.TestCase):
             # From en
             ("en", "de", TEXTS_EN),
             ("en", "zh", TEXTS_EN),
+            # From es
+            ("es", "de", TEXTS_ES),
+            ("es", "en", TEXTS_ES),
+            # There is no es -> zh
+            # ("es", "zh", TEXTS_ES),
         ]
     )
     def test_translate(self, src: str, target: str, texts):

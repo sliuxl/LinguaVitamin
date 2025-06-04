@@ -1,8 +1,8 @@
-name: Daily LinguaVitamin News (en) Run
+name: Daily LinguaVitamin News (es) Run
 
 on:
   schedule:
-    - cron: "30 15 * * *"       # Runs daily at 08:30 PDT
+    - cron: "00 15 * * *"       # Runs daily at 08:00 PDT
   workflow_dispatch:            # Also allows manual triggering
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
           git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminNews.git /tmp/LinguaVitaminNews
           cd /tmp/LinguaVitaminNews
           TODAY=$(date +%Y-%m-%d)
-          git push origin --delete AUTO--$TODAY--news-en || true
+          git push origin --delete AUTO--$TODAY--news-es || true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -62,8 +62,8 @@ jobs:
             --to_emails         $TO_EMAILS \
             --num_articles      $NUM_ARTICLES \
             \
-            --source_lang en \
-            --target_langs de es fr zh \
+            --source_lang es \
+            --target_langs de en \
             --github_repo sliuxl/LinguaVitaminNews \
             \
             --output_root /tmp/LinguaVitaminNews \
@@ -74,6 +74,6 @@ jobs:
         run: |
           cd /tmp/LinguaVitaminNews
           TODAY=$(date +%Y-%m-%d)
-          BRANCH=AUTO--$TODAY--news-en
+          BRANCH=AUTO--$TODAY--news-es
           git push origin $BRANCH:main
           git push origin --delete $BRANCH || true

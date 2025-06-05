@@ -1,4 +1,4 @@
-name: Weekly LinguaVitamin arXiv (cs.CL) Run
+name: Weekly LinguaVitamin arXiv (hacker-news) Run
 
 on:
   schedule:
@@ -31,7 +31,7 @@ jobs:
           git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminArxiv.git /tmp/LinguaVitaminArxiv
           cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          git push origin --delete AUTO--$TODAY--arxiv-cs__CL || true
+          git push origin --delete AUTO--$TODAY--hacker-news || true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -60,20 +60,20 @@ jobs:
             --from_email        "$FROM_EMAIL" \
             --to_emails         $TO_EMAILS \
             \
-            --arxiv cs.CL \
+            --arxiv hacker-news \
             --arxiv_num_days 8 \
             --github_repo sliuxl/LinguaVitaminArxiv \
             --num_articles 3000 \
             --target_langs de zh\
             \
             --output_root /tmp/LinguaVitaminArxiv \
-            --output_md  _posts/arxiv/{year}/{month} \
-            --output_csv csv/arxiv/{year}/{month}
+            --output_md  _posts/hacker-news/{year}/{month} \
+            --output_csv csv/hacker-news/{year}/{month}
 
       - name: Merge PR for LinguaVitaminArxiv
         run: |
           cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          BRANCH=AUTO--$TODAY--arxiv-cs__CL
+          BRANCH=AUTO--$TODAY--hacker-news
           git push origin $BRANCH:main
           git push origin --delete $BRANCH || true

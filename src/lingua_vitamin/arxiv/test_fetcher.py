@@ -4,6 +4,7 @@ import datetime
 import logging
 import unittest
 
+import pandas as pd
 from parameterized import parameterized
 
 from lingua_vitamin.arxiv import fetcher
@@ -37,11 +38,18 @@ class TestFetcher(unittest.TestCase):
                 _DATE,
                 {},
             ),
+            (
+                "hacker-news",
+                _DATE,
+                {},
+            ),
         )
     )
     def test_fetch_arxiv_papers(self, subject, date, kwargs):
         """Unit test for fetch_arxiv_papers."""
         papers = fetcher.fetch_arxiv_papers(subject=subject, date=date, **kwargs)
+        pd.DataFrame(papers).to_csv(f"/tmp/{subject}.csv")
+
         self.assertIsInstance(papers, list)
         logging.info("Papers in `%s` (# = %s --> %d):", subject, kwargs, len(papers))
         logging.info("%s\n\n", papers)
@@ -66,7 +74,7 @@ class TestFetcher(unittest.TestCase):
             self.assertIsInstance(item["authors"], str)
 
             for key in ("abstract", "title"):
-                self.assertNotIn("\n", item["authors"])
+                self.assertNotIn("\n", item[key])
 
     def test_invalid_fetch_arxiv_papers(self):
         """Unit test for fetch_arxiv_papers."""

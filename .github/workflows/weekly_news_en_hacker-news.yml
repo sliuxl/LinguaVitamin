@@ -1,4 +1,4 @@
-name: Weekly LinguaVitamin arXiv (hacker-news) Run
+name: Weekly LinguaVitamin hacker-news Run
 
 on:
   schedule:
@@ -31,7 +31,7 @@ jobs:
           git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminArxiv.git /tmp/LinguaVitaminArxiv
           cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          git push origin --delete AUTO--$TODAY--hacker-news || true
+          git push origin --delete AUTO--$TODAY--hacker-news-hacker-news || true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -74,6 +74,6 @@ jobs:
         run: |
           cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          BRANCH=AUTO--$TODAY--hacker-news
+          BRANCH=AUTO--$TODAY--hacker-news-hacker-news
           git push origin $BRANCH:main
           git push origin --delete $BRANCH || true

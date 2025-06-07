@@ -31,8 +31,10 @@ RSS_FEEDS = {
         "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml",
     ),
     "en": (
-        "https://rsshub.app/economist/latest",
+        ("https://www.economist.com/latest/rss.xml", 30),
         ("https://www.economist.com/finance-and-economics/rss.xml", 10),
+        ("https://www.economist.com/china/rss.xml", 10),
+        ("https://www.economist.com/united-states/rss.xml", 10),
         "https://moxie.foxnews.com/google-publisher/latest.xml",
         # Academic and Institutional Feeds
         # - Max Delbrück Center (MDC)

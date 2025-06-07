@@ -31,6 +31,8 @@ RSS_FEEDS = {
         "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml",
     ),
     "en": (
+        "https://rsshub.app/economist/latest",
+        ("https://www.economist.com/finance-and-economics/rss.xml", 10),
         "https://moxie.foxnews.com/google-publisher/latest.xml",
         # Academic and Institutional Feeds
         # - Max Delbrück Center (MDC)
@@ -75,6 +77,11 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
     news_items = []
     titles = set()
     for index, url in enumerate(urls):
+        max_count = top_n * 2
+        if not isinstance(url, str):
+            url, temp_max_count = url
+            max_count = min(max_count, temp_max_count)
+
         logging.info(
             "[%02d/%02d][%s => len = %03d/%03d] Processing %s ...",
             index,
@@ -86,7 +93,7 @@ def fetch_top_news_rss(lang: str = "en", top_n: int = 5) -> List[Dict[str, str]]
         )
 
         feed = feedparser.parse(url)
-        entries = feed.entries[: top_n * 2]
+        entries = feed.entries[:max_count]
 
         for entry in entries:
             title = entry.title if "title" in entry else ""

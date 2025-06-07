@@ -2,7 +2,9 @@ name: Weekly LinguaVitamin hacker-news Run
 
 on:
   schedule:
+    - cron: "00  8 * * 0"
     - cron: "00  8 * * 5"       # Runs at 01:00 PDT on Fridays
+    - cron: "00  8 * * 6"
   workflow_dispatch:            # Also allows manual triggering
 
 jobs:

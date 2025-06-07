@@ -184,7 +184,7 @@ def _translate_news(articles, source_lang: str, target_langs):
     return translated_articles
 
 
-def _translate_papers(df, column, target_langs, source_lang="en"):
+def _translate_papers(df, column, target_langs, source_lang="en", subject=None):
     translators = {target: Translator(source_lang, target) for target in target_langs}
 
     aug_titles = defaultdict(lambda: [])
@@ -192,6 +192,20 @@ def _translate_papers(df, column, target_langs, source_lang="en"):
 
     titles = df[column]
     abstracts = df[KEY_ABSTRACT]
+
+    def _normalize(raw: str) -> str:
+        raw = raw.strip()
+
+        desc = raw.split("</p>")[0]
+        if desc == raw:
+            return desc
+        prefix = "<p>Article URL: "
+        if desc.startswith(prefix):
+            return desc[len(prefix) :]
+        return f"{prefix}</p>"
+
+    if subject == "hacker-news":
+        abstracts = [_normalize(a) for a in abstracts]
 
     for target, trans in translators.items():
         logging.info("Processing target lang: `%s` ...", target)
@@ -498,7 +512,11 @@ def run_arxiv(args, md_path: str, csv_path: str, date_str: str):
 
     df = pd.DataFrame(papers)
     df = _translate_papers(
-        df, KEY_TITLE, args.target_langs or ("de", "zh"), source_lang="en"
+        df,
+        KEY_TITLE,
+        args.target_langs or ("de", "zh"),
+        source_lang="en",
+        subject=args.arxiv,
     )
     df = df[sorted(df.columns)]
 

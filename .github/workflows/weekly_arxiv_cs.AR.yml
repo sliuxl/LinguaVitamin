@@ -1,8 +1,8 @@
-name: Weekly LinguaVitamin arXiv (cs.DC) Run
+name: Weekly LinguaVitamin arXiv (cs.AR) Run
 
 on:
   schedule:
-    - cron: "30 14 * * 5"       # Runs at 07:30 PDT on Fridays
+    - cron: "00 14 * * 5"       # Runs at 07:00 PDT on Fridays
   workflow_dispatch:            # Also allows manual triggering
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
           git clone https://x-access-token:${GH_TOKEN}@github.com/sliuxl/LinguaVitaminArxiv.git /tmp/LinguaVitaminArxiv
           cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          git push origin --delete AUTO--$TODAY--arxiv-cs__DC || true
+          git push origin --delete AUTO--$TODAY--arxiv-cs__AR || true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -60,7 +60,7 @@ jobs:
             --from_email        "$FROM_EMAIL" \
             --to_emails         $TO_EMAILS \
             \
-            --arxiv cs.DC \
+            --arxiv cs.AR \
             --arxiv_num_days 8 \
             --github_repo sliuxl/LinguaVitaminArxiv \
             --num_articles 3000 \
@@ -74,6 +74,6 @@ jobs:
         run: |
           cd /tmp/LinguaVitaminArxiv
           TODAY=$(date +%Y-%m-%d)
-          BRANCH=AUTO--$TODAY--arxiv-cs__DC
+          BRANCH=AUTO--$TODAY--arxiv-cs__AR
           git push origin $BRANCH:main
           git push origin --delete $BRANCH || true
